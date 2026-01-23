@@ -1,0 +1,172 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Productos</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openModal()" color="primary">
+        <ion-icon slot="icon-only" name="add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="ion-padding">
+    <!-- Loading Spinner -->
+    <div *ngIf="isLoading" class="loading-container">
+      <ion-spinner></ion-spinner>
+      <p>Cargando productos...</p>
+    </div>
+
+    <!-- Lista de productos -->
+    <div *ngIf="!isLoading">
+      <h2>Lista de Productos ({{ products.length }})</h2>
+      
+      <ion-list *ngIf="products.length > 0">
+        <ion-card *ngFor="let product of products" class="product-card">
+          <div class="product-card-content">
+            <div class="product-image-container">
+              <ion-img [src]="product.image" [alt]="product.name" class="product-image"></ion-img>
+            </div>
+            <div class="product-info">
+              <ion-card-header>
+                <ion-card-title>{{ product.name }}</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <p><strong>Categoría:</strong> {{ product.category }}</p>
+                <p><strong>Precio:</strong> ${{ product.price | number:'1.2-2' }}</p>
+                <p *ngIf="product.originalPrice"><strong>Precio Original:</strong> ${{ product.originalPrice | number:'1.2-2' }}</p>
+                <p><strong>Descripción:</strong> {{ product.description }}</p>
+                <p><strong>Características:</strong> {{ product.features.join(', ') }}</p>
+                <p><strong>Rating:</strong> {{ product.rating }}/5 ({{ product.reviews }} reviews)</p>
+                <p><strong>En Stock:</strong> {{ product.inStock ? 'Sí' : 'No' }}</p>
+                <p *ngIf="product.hotSale"><strong>Hot Sale:</strong> Sí</p>
+              </ion-card-content>
+            </div>
+            <div class="product-actions">
+              <ion-button (click)="openModal(product)" color="warning" fill="outline">
+                <ion-icon slot="icon-only" name="create"></ion-icon>
+              </ion-button>
+              <ion-button (click)="deleteProduct(product)" color="danger" fill="outline">
+                <ion-icon slot="icon-only" name="trash"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+        </ion-card>
+      </ion-list>
+
+      <!-- Mensaje cuando no hay productos -->
+      <div *ngIf="products.length === 0" class="empty-state">
+        <p>No hay productos registrados. Crea uno nuevo haciendo clic en el botón +</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para crear/editar producto -->
+  <ion-modal [isOpen]="isModalOpen" (willDismiss)="closeModal()">
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>{{ isEditing ? 'Editar Producto' : 'Nuevo Producto' }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeModal()">
+            <ion-icon slot="icon-only" name="close"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+        <form [formGroup]="productForm" (ngSubmit)="saveProduct()">
+          <ion-item>
+            <ion-label position="stacked">Nombre *</ion-label>
+            <ion-input formControlName="name" type="text" placeholder="Nombre del producto"></ion-input>
+          </ion-item>
+          <div *ngIf="productForm.get('name')?.invalid && (productForm.get('name')?.touched || formSubmitted)" class="error-message">
+            El nombre es requerido y debe tener al menos 3 caracteres
+          </div>
+
+          <ion-item>
+            <ion-label position="stacked">Categoría *</ion-label>
+            <ion-input formControlName="category" type="text" placeholder="Categoría del producto"></ion-input>
+          </ion-item>
+          <div *ngIf="productForm.get('category')?.invalid && (productForm.get('category')?.touched || formSubmitted)" class="error-message">
+            La categoría es requerida
+          </div>
+
+          <ion-item>
+            <ion-label position="stacked">Precio *</ion-label>
+            <ion-input formControlName="price" type="number" placeholder="0.00" step="0.01"></ion-input>
+          </ion-item>
+          <div *ngIf="productForm.get('price')?.invalid && (productForm.get('price')?.touched || formSubmitted)" class="error-message">
+            El precio es requerido y debe ser mayor o igual a 0
+          </div>
+
+          <ion-item>
+            <ion-label position="stacked">Precio Original (opcional)</ion-label>
+            <ion-input formControlName="originalPrice" type="number" placeholder="0.00" step="0.01"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">URL de Imagen *</ion-label>
+            <ion-input formControlName="image" type="text" placeholder="https://ejemplo.com/imagen.jpg"></ion-input>
+          </ion-item>
+          <div *ngIf="productForm.get('image')?.invalid && (productForm.get('image')?.touched || formSubmitted)" class="error-message">
+            La URL de la imagen es requerida
+          </div>
+
+          <ion-item>
+            <ion-label position="stacked">Descripción *</ion-label>
+            <ion-textarea formControlName="description" placeholder="Descripción del producto" rows="4"></ion-textarea>
+          </ion-item>
+          <div *ngIf="productForm.get('description')?.invalid && (productForm.get('description')?.touched || formSubmitted)" class="error-message">
+            La descripción es requerida y debe tener al menos 10 caracteres
+          </div>
+
+          <ion-item>
+            <ion-label position="stacked">Características (separadas por comas) *</ion-label>
+            <ion-textarea formControlName="features" placeholder="Característica 1, Característica 2, ..." rows="3"></ion-textarea>
+          </ion-item>
+          <div *ngIf="productForm.get('features')?.invalid && (productForm.get('features')?.touched || formSubmitted)" class="error-message">
+            Las características son requeridas
+          </div>
+
+          <ion-item>
+            <ion-label position="stacked">Rating (0-5) *</ion-label>
+            <ion-input formControlName="rating" type="number" placeholder="0" min="0" max="5" step="0.1"></ion-input>
+          </ion-item>
+          <div *ngIf="productForm.get('rating')?.invalid && (productForm.get('rating')?.touched || formSubmitted)" class="error-message">
+            El rating debe estar entre 0 y 5
+          </div>
+
+          <ion-item>
+            <ion-label position="stacked">Número de Reviews *</ion-label>
+            <ion-input formControlName="reviews" type="number" placeholder="0" min="0"></ion-input>
+          </ion-item>
+          <div *ngIf="productForm.get('reviews')?.invalid && (productForm.get('reviews')?.touched || formSubmitted)" class="error-message">
+            El número de reviews debe ser mayor o igual a 0
+          </div>
+
+          <ion-item>
+            <ion-label>En Stock</ion-label>
+            <ion-checkbox formControlName="inStock"></ion-checkbox>
+          </ion-item>
+
+          <ion-item>
+            <ion-label>Hot Sale</ion-label>
+            <ion-checkbox formControlName="hotSale"></ion-checkbox>
+          </ion-item>
+
+          <div class="form-actions">
+            <ion-button type="submit" expand="block" color="primary" [disabled]="productForm.invalid">
+              <ion-icon slot="start" name="checkmark"></ion-icon>
+              {{ isEditing ? 'Actualizar' : 'Crear' }} Producto
+            </ion-button>
+            <ion-button type="button" expand="block" fill="outline" (click)="closeModal()">
+              Cancelar
+            </ion-button>
+          </div>
+        </form>
+    </ion-content>
+  </ion-modal>
+</ion-content>
