@@ -23,6 +23,8 @@ import { ProductsService } from '../services/products.service';
 export class Tab1Page implements OnInit {
 
   products: Product[] = [];
+  filteredProducts: Product[] = [];
+  searchTerm: string = '';
 
   constructor(
     private alertController: AlertController,
@@ -35,8 +37,30 @@ export class Tab1Page implements OnInit {
   ngOnInit() {
     this.productsService.getAll().subscribe(products => {
       this.products = products;
+      this.applyFilter();
       console.log('Productos cargados desde Firestore:', products);
     });
+  }
+
+  onSearchChange(event: any) {
+    this.searchTerm = event.detail.value || '';
+    this.applyFilter();
+  }
+
+  applyFilter() {
+    if (!this.searchTerm || this.searchTerm.trim() === '') {
+      this.filteredProducts = this.products;
+    } else {
+      const searchLower = this.searchTerm.toLowerCase().trim();
+      this.filteredProducts = this.products.filter(product =>
+        product.name.toLowerCase().includes(searchLower)
+      );
+    }
+  }
+
+  clearSearch() {
+    this.searchTerm = '';
+    this.applyFilter();
   }
 
   openWhatsApp() {

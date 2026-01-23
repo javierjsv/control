@@ -1,3 +1,38 @@
+.search-container {
+  margin-bottom: 1.5rem;
+
+  .search-item {
+    --background: white;
+    --border-radius: 8px;
+    --padding-start: 1rem;
+    --padding-end: 1rem;
+    --inner-padding-end: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0;
+
+    ion-label {
+      font-weight: 500;
+      color: var(--ion-color-primary);
+    }
+
+    ion-input {
+      --padding-start: 0.5rem;
+    }
+  }
+}
+
+.empty-search-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--ion-color-medium);
+  margin-bottom: 1rem;
+
+  p {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+  }
+}
+
 .products-container {
   display: grid;
   grid-template-columns: 1fr;

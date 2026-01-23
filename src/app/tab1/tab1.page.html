@@ -10,8 +10,38 @@
     <img src="assets/icon/icons8-whatsapp-100.png" class="img-whatsapp" alt="Favicon">
   </div>
 
+  <!-- Barra de búsqueda -->
+  <div class="search-container">
+    <ion-item class="search-item">
+      <ion-label position="stacked">Buscar producto</ion-label>
+      <ion-input 
+        type="text" 
+        [value]="searchTerm"
+        (ionInput)="onSearchChange($event)"
+        placeholder="Escribe el nombre del producto..."
+        clearOnEdit="false">
+      </ion-input>
+      <ion-button 
+        *ngIf="searchTerm" 
+        (click)="clearSearch()" 
+        fill="clear" 
+        size="small"
+        slot="end">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </div>
+
+  <!-- Mensaje cuando no hay resultados de búsqueda -->
+  <div *ngIf="products.length > 0 && filteredProducts.length === 0" class="empty-search-state">
+    <p>No se encontraron productos que coincidan con "{{ searchTerm }}"</p>
+    <ion-button (click)="clearSearch()" fill="outline" class="ion-margin-top">
+      Limpiar búsqueda
+    </ion-button>
+  </div>
+
   <div class="products-container">
-    <ion-card *ngFor="let product of products" class="product-card" (click)="goToProductDetail(product.id)">
+    <ion-card *ngFor="let product of filteredProducts" class="product-card" (click)="goToProductDetail(product.id)">
       
       <!-- Imagen del producto con badge HOT SALE -->
       <div class="product-image-container">
