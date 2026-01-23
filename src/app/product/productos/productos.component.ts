@@ -195,7 +195,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
 
   async saveProduct() {
     this.formSubmitted = true;
-    
+    console.log(this.productForm.value);
     if (this.productForm.invalid) {
       // Marcar todos los campos como touched para mostrar errores
       Object.keys(this.productForm.controls).forEach(key => {
@@ -219,11 +219,11 @@ export class ProductosComponent implements OnInit, OnDestroy {
         .map((f: string) => f.trim())
         .filter((f: string) => f.length > 0);
 
-      const productData: Omit<Product, 'id'> = {
+      // Construir el objeto de producto, excluyendo campos undefined
+      const productData: any = {
         name: formValue.name,
         category: formValue.category,
         price: formValue.price,
-        originalPrice: formValue.originalPrice > 0 ? formValue.originalPrice : undefined,
         image: formValue.image,
         description: formValue.description,
         features: featuresArray,
@@ -232,6 +232,11 @@ export class ProductosComponent implements OnInit, OnDestroy {
         inStock: formValue.inStock,
         hotSale: formValue.hotSale || false
       };
+
+      // Solo incluir originalPrice si tiene un valor mayor a 0
+      if (formValue.originalPrice && formValue.originalPrice > 0) {
+        productData.originalPrice = formValue.originalPrice;
+      }
 
       if (this.isEditing && this.editingProductId) {
         await this.productsService.update(this.editingProductId, productData);
