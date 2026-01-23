@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { IonicModule, AlertController, ToastController } from '@ionic/angular';
 import { Product } from '../core/interfaces/product.interfaces';
+
 
 
 
@@ -94,7 +96,8 @@ export class Tab1Page {
 
   constructor(
     private alertController: AlertController,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private router: Router
   ) {}
 
   openWhatsApp() {
@@ -104,11 +107,16 @@ export class Tab1Page {
     window.open(whatsappUrl, '_system');
   }
 
+  goToProductDetail(productId: number) {
+    this.router.navigate(['/product', productId]);
+  }
+
   async shareProduct(product: Product) {
+    const productUrl = `${window.location.origin}/product/${product.id}`;
     const shareData = {
       title: product.name,
       text: `${product.name} - ${product.description} - Precio: $${product.price}`,
-      url: window.location.href
+      url: productUrl
     };
 
     // Verificar si Web Share API está disponible (móviles)
@@ -128,8 +136,9 @@ export class Tab1Page {
   }
 
   showSocialShareOptions(product: Product) {
+    const productUrl = `${window.location.origin}/product/${product.id}`;
     const shareText = encodeURIComponent(`${product.name} - ${product.description}`);
-    const shareUrl = encodeURIComponent(window.location.href);
+    const shareUrl = encodeURIComponent(productUrl);
     const shareTitle = encodeURIComponent(product.name);
 
     // Crear un popover con opciones de redes sociales
@@ -175,7 +184,8 @@ export class Tab1Page {
       text: option.name,
       handler: async () => {
         if (option.action === 'copy') {
-          await this.copyToClipboard(window.location.href);
+          const productUrl = `${window.location.origin}/product/${product.id}`;
+          await this.copyToClipboard(productUrl);
         } else {
           window.open(option.url, '_blank', 'width=600,height=400');
         }

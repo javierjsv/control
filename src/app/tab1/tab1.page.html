@@ -11,7 +11,7 @@
   </div>
 
   <div class="products-container">
-    <ion-card *ngFor="let product of products" class="product-card">
+    <ion-card *ngFor="let product of products" class="product-card" (click)="goToProductDetail(product.id)">
       
       <!-- Imagen del producto con badge HOT SALE -->
       <div class="product-image-container">
@@ -55,7 +55,7 @@
           <!-- Botón Compartir -->
           <button 
             class="share-btn" 
-            (click)="shareProduct(product)"
+            (click)="shareProduct(product); $event.stopPropagation()"
             type="button">
             <i class="fas fa-share-alt"></i>
           </button>

@@ -1,0 +1,93 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/tab1"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detalle del Producto</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding" *ngIf="product">
+  <div class="product-detail-container">
+    
+    <!-- Imagen del producto con badge -->
+    <div class="product-image-container">
+      <img [src]="product.image" [alt]="product.name" class="product-image" />
+      <div class="hot-sale-badge" *ngIf="product.hotSale">
+        Disponible
+      </div>
+    </div>
+
+    <!-- Información del producto -->
+    <div class="product-info">
+      <!-- Categoría -->
+      <div class="product-category">{{ product.category }}</div>
+      
+      <!-- Nombre del producto -->
+      <h1 class="product-name">{{ product.name }}</h1>
+      
+      <!-- Rating y Reviews -->
+      <div class="product-rating-section">
+        <div class="stars">
+          <i 
+            *ngFor="let star of getStars(product.rating); let i = index" 
+            [class.fas]="star === 'full'"
+            [class.far]="star === 'empty'"
+            class="fa-star star-icon"
+            [attr.aria-label]="'Star ' + (i + 1)">
+          </i>
+        </div>
+        <span class="reviews-count">{{ product.reviews }} Reviews</span>
+        <span class="stock-status" [class.in-stock]="product.inStock">
+          {{ product.inStock ? '• En Stock' : '• Agotado' }}
+        </span>
+      </div>
+
+      <!-- Precio -->
+      <div class="product-pricing">
+        <div class="original-price" *ngIf="product.originalPrice">
+          ${{ product.originalPrice | number:'1.0-0' }}
+        </div>
+        <div class="current-price">
+          ${{ product.price | number:'1.0-0' }}
+        </div>
+      </div>
+
+      <!-- Descripción -->
+      <div class="product-description-section">
+        <h2 class="section-title">Descripción</h2>
+        <p class="product-description">{{ product.description }}</p>
+      </div>
+
+      <!-- Características -->
+      <div class="product-features-section">
+        <h2 class="section-title">Características</h2>
+        <div class="product-features">
+          <span class="feature-tag" *ngFor="let feature of product.features">
+            {{ feature }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Botón de acción -->
+      <div class="product-actions">
+        <ion-button 
+          expand="block" 
+          class="action-btn"
+          [disabled]="!product.inStock">
+          <i class="fas fa-shopping-cart" style="margin-right: 8px;"></i>
+          Agregar al Carrito
+        </ion-button>
+      </div>
+
+    </div>
+
+  </div>
+</ion-content>
+
+<ion-content *ngIf="!product" class="ion-padding">
+  <div class="loading-container">
+    <ion-spinner></ion-spinner>
+    <p>Cargando producto...</p>
+  </div>
+</ion-content>
