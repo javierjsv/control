@@ -22,10 +22,32 @@
 
     <!-- Lista de productos -->
     <div *ngIf="!isLoading">
-      <h2>Lista de Productos ({{ products.length }})</h2>
+      <div class="header-section">
+        <h2>Lista de Productos ({{ products.length }})</h2>
+        <div class="search-container">
+          <ion-item class="search-item">
+            <ion-label position="stacked">Buscar por nombre</ion-label>
+            <ion-input 
+              type="text" 
+              [value]="searchTerm"
+              (ionInput)="onSearchChange($event)"
+              placeholder="Escribe el nombre del producto..."
+              clearOnEdit="false">
+            </ion-input>
+            <ion-button 
+              *ngIf="searchTerm" 
+              (click)="clearSearch()" 
+              fill="clear" 
+              size="small"
+              slot="end">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </div>
+      </div>
       
       <!-- Vista de Tabla para pantallas grandes (mayor a tablet) -->
-      <div class="table-view" *ngIf="products.length > 0">
+      <div class="table-view" *ngIf="filteredProducts.length > 0">
         <table class="products-table">
           <thead>
             <tr>
@@ -39,7 +61,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let product of products; let i = index">
+            <tr *ngFor="let product of filteredProducts; let i = index">
               <td>{{ i + 1 }}</td>
               <td>
                 <div class="product-name-cell">
@@ -74,9 +96,9 @@
       </div>
 
       <!-- Vista de Tarjetas para móviles y tablets -->
-      <div class="cards-view" *ngIf="products.length > 0">
+      <div class="cards-view" *ngIf="filteredProducts.length > 0">
         <ion-list>
-          <ion-card *ngFor="let product of products" class="product-card">
+          <ion-card *ngFor="let product of filteredProducts" class="product-card">
             <div class="product-card-content">
               <div class="product-image-container">
                 <ion-img draggable="false" [src]="product.image" [alt]="product.name" class="product-image"></ion-img>
@@ -112,6 +134,14 @@
       <!-- Mensaje cuando no hay productos -->
       <div *ngIf="products.length === 0" class="empty-state">
         <p>No hay productos registrados. Crea uno nuevo haciendo clic en el botón +</p>
+      </div>
+
+      <!-- Mensaje cuando no hay resultados de búsqueda -->
+      <div *ngIf="products.length > 0 && filteredProducts.length === 0" class="empty-state">
+        <p>No se encontraron productos que coincidan con "{{ searchTerm }}"</p>
+        <ion-button (click)="clearSearch()" fill="outline" class="ion-margin-top">
+          Limpiar búsqueda
+        </ion-button>
       </div>
     </div>
   </div>

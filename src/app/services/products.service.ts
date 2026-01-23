@@ -11,7 +11,7 @@ import {
   query, 
   orderBy 
 } from '@angular/fire/firestore';
-import { Observable, from } from 'rxjs';
+import { Observable, from, map } from 'rxjs';
 import { Product } from '../core/interfaces/product.interfaces';
 
 @Injectable({
@@ -71,5 +71,25 @@ export class ProductsService {
   delete(id: string): Promise<void> {
     const productRef = doc(this.firestore, this.collectionName, id);
     return deleteDoc(productRef);
+  }
+
+  /**
+   * Filtra productos por nombre (búsqueda parcial, case-insensitive)
+   * @param searchTerm Término de búsqueda para filtrar por nombre
+   * @returns Observable con un array de productos filtrados
+   */
+  filterByName(searchTerm: string): Observable<Product[]> {
+    if (!searchTerm || searchTerm.trim() === '') {
+      return this.getAll();
+    }
+
+    const searchLower = searchTerm.toLowerCase().trim();
+    return this.getAll().pipe(
+      map(products => 
+        products.filter(product => 
+          product.name.toLowerCase().includes(searchLower)
+        )
+      )
+    );
   }
 }

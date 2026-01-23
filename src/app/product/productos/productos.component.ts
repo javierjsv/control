@@ -29,7 +29,7 @@ import {
   LoadingController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { add, create, trash, close, checkmark } from 'ionicons/icons';
+import { add, create, trash, close, checkmark, search } from 'ionicons/icons';
 import { ProductsService } from '../../services/products.service';
 import { Product } from '../../core/interfaces/product.interfaces';
 import { Subscription } from 'rxjs';
@@ -69,12 +69,14 @@ import { Subscription } from 'rxjs';
 })
 export class ProductosComponent implements OnInit, OnDestroy {
   products: Product[] = [];
+  filteredProducts: Product[] = [];
   productForm: FormGroup;
   isModalOpen = false;
   isEditing = false;
   editingProductId: string | null = null;
   isLoading = false;
   formSubmitted = false;
+  searchTerm: string = '';
   private productsSubscription?: Subscription;
 
   constructor(
@@ -84,7 +86,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
     private toastController: ToastController,
     private loadingController: LoadingController
   ) {
-    addIcons({ add, create, trash, close, checkmark });
+    addIcons({ add, create, trash, close, checkmark, search });
     
     this.productForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
@@ -116,6 +118,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
     this.productsSubscription = this.productsService.getAll().subscribe({
       next: (products) => {
         this.products = products;
+        this.applyFilter();
         this.isLoading = false;
       },
       error: (error) => {
@@ -124,6 +127,27 @@ export class ProductosComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       }
     });
+  }
+
+  onSearchChange(event: any) {
+    this.searchTerm = event.detail.value || '';
+    this.applyFilter();
+  }
+
+  applyFilter() {
+    if (!this.searchTerm || this.searchTerm.trim() === '') {
+      this.filteredProducts = this.products;
+    } else {
+      const searchLower = this.searchTerm.toLowerCase().trim();
+      this.filteredProducts = this.products.filter(product =>
+        product.name.toLowerCase().includes(searchLower)
+      );
+    }
+  }
+
+  clearSearch() {
+    this.searchTerm = '';
+    this.applyFilter();
   }
 
   openModal(product?: Product) {
@@ -246,6 +270,8 @@ export class ProductosComponent implements OnInit, OnDestroy {
         this.showToast('Producto creado correctamente', 'success');
       }
 
+      // Recargar productos y aplicar filtro
+      this.loadProducts();
       this.closeModal();
     } catch (error) {
       console.error('Error al guardar producto:', error);
@@ -281,6 +307,8 @@ export class ProductosComponent implements OnInit, OnDestroy {
             try {
               await this.productsService.delete(product.id!);
               this.showToast('Producto eliminado correctamente', 'success');
+              // Recargar productos y aplicar filtro
+              this.loadProducts();
             } catch (error) {
               console.error('Error al eliminar producto:', error);
               this.showToast('Error al eliminar el producto', 'danger');
