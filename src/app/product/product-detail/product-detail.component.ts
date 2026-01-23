@@ -32,7 +32,7 @@ export class ProductDetailComponent implements OnInit {
     // Por ahora, data quemada - luego se conectará a un servicio
     const products: Product[] = [
       {
-        id: 1,
+        id: '1',
         name: 'UltraBook Pro X',
         category: 'HIGH-PERFORMANCE LAPTOP',
         price: 1999.00,
@@ -46,7 +46,7 @@ export class ProductDetailComponent implements OnInit {
         hotSale: true
       },
       {
-        id: 2,
+        id: '2',
         name: 'Smart Watch Pro',
         category: 'WEARABLE TECHNOLOGY',
         price: 299.00,
@@ -60,7 +60,7 @@ export class ProductDetailComponent implements OnInit {
         hotSale: true
       },
       {
-        id: 3,
+        id: '3',
         name: 'Wireless Headphones',
         category: 'AUDIO EQUIPMENT',
         price: 149.00,
@@ -76,8 +76,7 @@ export class ProductDetailComponent implements OnInit {
     ];
 
     if (this.productId) {
-      const id = parseInt(this.productId, 10);
-      this.product = products.find(p => p.id === id) || products[0];
+      this.product = products.find(p => p.id === this.productId) || products[0];
     } else {
       this.product = products[0];
     }

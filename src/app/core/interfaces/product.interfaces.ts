@@ -1,5 +1,5 @@
 export interface Product {
-  id: number;
+  id?: string; // Firestore genera IDs como strings
   name: string;
   category: string;
   price: number;

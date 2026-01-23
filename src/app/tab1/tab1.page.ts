@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IonicModule, AlertController, ToastController } from '@ionic/angular';
 import { Product } from '../core/interfaces/product.interfaces';
+import { ProductsService } from '../services/products.service';
 
 
 
@@ -19,86 +20,24 @@ import { Product } from '../core/interfaces/product.interfaces';
     IonicModule
   ],
 })
-export class Tab1Page {
+export class Tab1Page implements OnInit {
 
-  products: Product[] = [
-    {
-      id: 1,
-      name: 'UltraBook Pro X',
-      category: 'HIGH-PERFORMANCE LAPTOP',
-      price: 1999.00,
-      originalPrice: 2499.00,
-      image: 'https://picsum.photos/id/237/400/300',
-      description: 'Cutting-edge performance with Intel Core i9, 32GB RAM, and a 1TB SSD in a sleek, lightweight design.',
-      features: ['4K Display', '16-Hour Battery', 'Thunderbolt 4'],
-      rating: 4,
-      reviews: 245,
-      inStock: true,
-      hotSale: true
-    },
-    {
-      id: 2,
-      name: 'Smart Watch Pro',
-      category: 'WEARABLE TECHNOLOGY',
-      price: 299.00,
-      originalPrice: 399.00,
-      image: 'https://picsum.photos/id/237/400/300',
-      description: 'Advanced fitness tracking with heart rate monitor, GPS, and 7-day battery life.',
-      features: ['GPS', 'Heart Rate', 'Waterproof'],
-      rating: 4.5,
-      reviews: 128,
-      inStock: true,
-      hotSale: true
-    },
-    {
-      id: 3,
-      name: 'Wireless Headphones',
-      category: 'AUDIO EQUIPMENT',
-      price: 149.00,
-      originalPrice: 199.00,
-      image: 'https://picsum.photos/id/237/400/300',
-      description: 'Premium sound quality with active noise cancellation and 30-hour battery life.',
-      features: ['Noise Cancel', '30h Battery', 'Bluetooth 5.0'],
-      rating: 4.2,
-      reviews: 89,
-      inStock: true,
-      hotSale: false
-    },
-    {
-      id: 4,
-      name: 'Wireless Headphones',
-      category: 'AUDIO EQUIPMENT',
-      price: 149.00,
-      originalPrice: 199.00,
-      image: 'https://picsum.photos/id/237/400/300',
-      description: 'Premium sound quality with active noise cancellation and 30-hour battery life.',
-      features: ['Noise Cancel', '30h Battery', 'Bluetooth 5.0'],
-      rating: 4.2,
-      reviews: 89,
-      inStock: true,
-      hotSale: false
-    },
-    {
-      id: 5,
-      name: 'Wireless Headphones',
-      category: 'AUDIO EQUIPMENT',
-      price: 149.00,
-      originalPrice: 199.00,
-      image: 'https://picsum.photos/id/237/400/300',
-      description: 'Premium sound quality with active noise cancellation and 30-hour battery life.',
-      features: ['Noise Cancel', '30h Battery', 'Bluetooth 5.0'],
-      rating: 4.2,
-      reviews: 89,
-      inStock: true,
-      hotSale: false
-    }
-  ];
+  products: Product[] = [];
 
   constructor(
     private alertController: AlertController,
     private toastController: ToastController,
-    private router: Router
+    private router: Router,
+    private  productsService: ProductsService
   ) {}
+
+
+  ngOnInit() {
+    this.productsService.getAll().subscribe(products => {
+      this.products = products;
+      console.log('Productos cargados desde Firestore:', products);
+    });
+  }
 
   openWhatsApp() {
     const phoneNumber = '3185704290';
@@ -107,11 +46,14 @@ export class Tab1Page {
     window.open(whatsappUrl, '_system');
   }
 
-  goToProductDetail(productId: number) {
-    this.router.navigate(['/product', productId]);
+  goToProductDetail(productId: string | undefined) {
+    if (productId) {
+      this.router.navigate(['/product', productId]);
+    }
   }
 
   async shareProduct(product: Product) {
+    if (!product.id) return;
     const productUrl = `${window.location.origin}/product/${product.id}`;
     const shareData = {
       title: product.name,
@@ -136,6 +78,7 @@ export class Tab1Page {
   }
 
   showSocialShareOptions(product: Product) {
+    if (!product.id) return;
     const productUrl = `${window.location.origin}/product/${product.id}`;
     const shareText = encodeURIComponent(`${product.name} - ${product.description}`);
     const shareUrl = encodeURIComponent(productUrl);
@@ -184,6 +127,7 @@ export class Tab1Page {
       text: option.name,
       handler: async () => {
         if (option.action === 'copy') {
+          if (!product.id) return;
           const productUrl = `${window.location.origin}/product/${product.id}`;
           await this.copyToClipboard(productUrl);
         } else {
