@@ -15,7 +15,7 @@
       
       <!-- Imagen del producto con badge HOT SALE -->
       <div class="product-image-container">
-        <img [src]="product.image" [alt]="product.name" class="product-image" />
+        <img draggable="false" [src]="product.image" [alt]="product.name" class="product-image" />
         <div class="hot-sale-badge" *ngIf="product.hotSale">
           Disponible
         </div>
