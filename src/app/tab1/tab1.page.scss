@@ -1,24 +1,265 @@
-#container {
-  text-align: center;
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+.products-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  padding-bottom: 100px;
+
+  // Tablet y resoluciones más altas: 4 columnas
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
 }
 
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
-}
-
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-  color: #8c8c8c;
+.product-card {
   margin: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: #f5f5f5;
 }
 
-#container a {
-  text-decoration: none;
+.product-image-container {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  background: white;
+  overflow: hidden;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hot-sale-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #46e53e;
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.product-content {
+  background: white;
+  padding: 20px;
+}
+
+.product-category {
+  font-size: 10px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.product-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: #000;
+  margin: 0 0 12px 0;
+  line-height: 1.2;
+}
+
+.product-description {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+}
+
+.product-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.feature-tag {
+  background: #f0f0f0;
+  color: #333;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.product-pricing-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+
+.pricing-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.original-price {
+  font-size: 14px;
+  color: #999;
+  text-decoration: line-through;
+}
+
+.current-price {
+  font-size: 32px;
+  font-weight: 700;
+  color: #000;
+  line-height: 1;
+}
+
+.share-btn {
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #333;
+  }
+
+  &:active {
+    background: #555;
+  }
+
+  i {
+    font-size: 20px;
+    color: #fff;
+    display: inline-block;
+    line-height: 1;
+  }
+}
+
+.product-rating-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.rating-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stars {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.star-icon {
+  font-size: 18px;
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+  text-align: center;
+
+  &.fas {
+    color: #ffc107;
+  }
+
+  &.far {
+    color: #ddd;
+  }
+}
+
+.reviews-count {
+  font-size: 14px;
+  color: #666;
+}
+
+.stock-status {
+  font-size: 14px;
+  font-weight: 600;
+
+  &.in-stock {
+    color: #28a745;
+  }
+
+  &:not(.in-stock) {
+    color: #dc3545;
+  }
+}
+
+.img-whatsapp {
+  height: 60px;
+  width: 60px;
+  position: fixed;
+  right: 17px;
+  bottom: 20px;
+  z-index: 100;
+  cursor: pointer;
+  transition: transform 0.2s;
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+// Responsive para móvil
+@media (max-width: 767px) {
+  .product-pricing-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .share-btn {
+    width: 100%;
+    max-width: 44px;
+  }
+
+  .current-price {
+    font-size: 28px;
+  }
+}
+
+// Ajustes para tablet y desktop
+@media (min-width: 768px) {
+  .product-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .product-image-container {
+    height: 200px;
+  }
+
+  .product-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .product-pricing-row {
+    margin-top: auto;
+  }
+
+  .img-whatsapp {
+    height: 80px;
+    width: 80px;
+  }
 }

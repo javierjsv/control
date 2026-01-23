@@ -1,20 +1,89 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>
-      Tab 1
-    </ion-title>
+    <ion-title>Catalogo</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 1</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
 
-  <div id="container">
-    <strong class="capitalize">Control</strong>
-    <p>Esta es la página Tab 1</p>
+  <div style="width: 30px; height: 30px;" (click)="openWhatsApp()">
+    <img src="assets/icon/icons8-whatsapp-100.png" class="img-whatsapp" alt="Favicon">
   </div>
+
+  <div class="products-container">
+    <ion-card *ngFor="let product of products" class="product-card">
+      
+      <!-- Imagen del producto con badge HOT SALE -->
+      <div class="product-image-container">
+        <img [src]="product.image" [alt]="product.name" class="product-image" />
+        <div class="hot-sale-badge" *ngIf="product.hotSale">
+          Disponible
+        </div>
+      </div>
+
+      <!-- Contenido de la tarjeta -->
+      <div class="product-content">
+        <!-- Categoría -->
+        <div class="product-category">{{ product.category }}</div>
+        
+        <!-- Nombre del producto -->
+        <h2 class="product-name">{{ product.name }}</h2>
+        
+        <!-- Descripción -->
+        <p class="product-description">{{ product.description }}</p>
+        
+        <!-- Features/Tags -->
+        <div class="product-features">
+          <span class="feature-tag" *ngFor="let feature of product.features">
+            {{ feature }}
+          </span>
+        </div>
+        
+        <!-- Precio y botón -->
+        <div class="product-pricing-row">
+          <div class="pricing-info">
+            <!-- Precio original tachado -->
+            <div class="original-price" *ngIf="product.originalPrice">
+              ${{ product.originalPrice | number:'1.0-0' }}
+            </div>
+            <!-- Precio actual -->
+            <div class="current-price">
+              ${{ product.price | number:'1.0-0' }}
+            </div>
+          </div>
+          
+          <!-- Botón Compartir -->
+          <button 
+            class="share-btn" 
+            (click)="shareProduct(product)"
+            type="button">
+            <i class="fas fa-share-alt"></i>
+          </button>
+        </div>
+        
+        <!-- Rating y Reviews -->
+        <div class="product-rating-row">
+          <div class="rating-section">
+            <div class="stars">
+              <i 
+                *ngFor="let star of getStars(product.rating); let i = index" 
+                [class.fas]="star === 'full'"
+                [class.far]="star === 'empty'"
+                class="fa-star star-icon"
+                [attr.aria-label]="'Star ' + (i + 1)">
+              </i>
+            </div>
+            <span class="reviews-count">{{ product.reviews }} Reviews</span>
+          </div>
+          
+          <!-- Estado de stock -->
+          <div class="stock-status" [class.in-stock]="product.inStock">
+            {{ product.inStock ? 'In Stock' : 'Out of Stock' }}
+          </div>
+        </div>
+      </div>
+
+    </ion-card>
+  </div>
+
 </ion-content>

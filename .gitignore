@@ -1,15 +1,38 @@
-# See http://help.github.com/ignore-files/ for more about ignoring files.
+# Specifies intentionally untracked files to ignore when using Git
+# http://git-scm.com/docs/gitignore
+
+*~
+*.sw[mnpcod]
+.tmp
+*.tmp
+*.tmp.*
+UserInterfaceState.xcuserstate
+$RECYCLE.BIN/
+
+*.log
+log.txt
+
+
+/.sourcemaps
+/.versions
+/coverage
+
+# Ionic
+/.ionic
+/www
+/platforms
+/plugins
 
 # Compiled output
-/www
 /dist
 /tmp
 /out-tsc
+/bazel-out
 
 # Node
 /node_modules
-/npm-debug.log
-/yarn-error.log
+npm-debug.log
+yarn-error.log
 
 # IDEs and editors
 .idea/
@@ -18,6 +41,7 @@
 .c9/
 *.launch
 .settings/
+*.sublime-project
 *.sublime-workspace
 
 # Visual Studio Code
@@ -28,9 +52,13 @@
 !.vscode/extensions.json
 .history/*
 
+
 # Miscellaneous
+/.angular
 /.angular/cache
 .sass-cache/
+/.nx
+/.nx/cache
 /connect.lock
 /coverage
 /libpeerconnection.log
