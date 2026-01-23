@@ -7,12 +7,33 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding" *ngIf="product">
+<!-- Estado de carga -->
+<ion-content *ngIf="isLoading" class="ion-padding">
+  <div class="loading-container">
+    <ion-spinner></ion-spinner>
+    <p>Cargando producto...</p>
+  </div>
+</ion-content>
+
+<!-- Estado de error -->
+<ion-content *ngIf="!isLoading && error" class="ion-padding">
+  <div class="error-container">
+    <ion-icon name="alert-circle" class="error-icon"></ion-icon>
+    <h2>Error</h2>
+    <p>{{ error }}</p>
+    <ion-button (click)="router.navigate(['/tabs/tab1'])" fill="outline" class="ion-margin-top">
+      Volver al catálogo
+    </ion-button>
+  </div>
+</ion-content>
+
+<!-- Contenido del producto -->
+<ion-content class="ion-padding" *ngIf="!isLoading && product && !error">
   <div class="product-detail-container">
     
     <!-- Imagen del producto con badge -->
     <div class="product-image-container">
-      <img [src]="product.image" [alt]="product.name" class="product-image" />
+      <img draggable="false" [src]="product.image" [alt]="product.name" class="product-image" />
       <div class="hot-sale-badge" *ngIf="product.hotSale">
         Disponible
       </div>
@@ -69,25 +90,7 @@
         </div>
       </div>
 
-      <!-- Botón de acción -->
-      <div class="product-actions">
-        <ion-button 
-          expand="block" 
-          class="action-btn"
-          [disabled]="!product.inStock">
-          <i class="fas fa-shopping-cart" style="margin-right: 8px;"></i>
-          Agregar al Carrito
-        </ion-button>
-      </div>
-
     </div>
 
-  </div>
-</ion-content>
-
-<ion-content *ngIf="!product" class="ion-padding">
-  <div class="loading-container">
-    <ion-spinner></ion-spinner>
-    <p>Cargando producto...</p>
   </div>
 </ion-content>

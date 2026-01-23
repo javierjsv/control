@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
-import { ActivatedRoute } from '@angular/router';
+import { IonicModule, ToastController } from '@ionic/angular';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Product } from 'src/app/core/interfaces/product.interfaces';
-
+import { ProductsService } from '../../services/products.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-product-detail',
@@ -17,69 +18,81 @@ import { Product } from 'src/app/core/interfaces/product.interfaces';
     IonicModule
   ],
 })
-export class ProductDetailComponent implements OnInit {
+export class ProductDetailComponent implements OnInit, OnDestroy {
   product: Product | null = null;
   productId: string | null = null;
+  isLoading = true;
+  error: string | null = null;
+  router = this.routerService; // Exponer router para el template
+  private productSubscription?: Subscription;
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(
+    private route: ActivatedRoute,
+    private routerService: Router,
+    private productsService: ProductsService,
+    private toastController: ToastController
+  ) {}
 
   ngOnInit() {
     this.productId = this.route.snapshot.paramMap.get('id');
-    this.loadProduct();
+    if (this.productId) {
+      this.loadProduct();
+    } else {
+      this.error = 'ID de producto no válido';
+      this.isLoading = false;
+      this.showErrorAndRedirect('ID de producto no encontrado');
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.productSubscription) {
+      this.productSubscription.unsubscribe();
+    }
   }
 
   loadProduct() {
-    // Por ahora, data quemada - luego se conectará a un servicio
-    const products: Product[] = [
-      {
-        id: '1',
-        name: 'UltraBook Pro X',
-        category: 'HIGH-PERFORMANCE LAPTOP',
-        price: 1999.00,
-        originalPrice: 2499.00,
-        image: 'https://picsum.photos/id/237/800/600',
-        description: 'Cutting-edge performance with Intel Core i9, 32GB RAM, and a 1TB SSD in a sleek, lightweight design. Perfect for professionals and power users who demand the best.',
-        features: ['4K Display', '16-Hour Battery', 'Thunderbolt 4', 'Intel Core i9', '32GB RAM', '1TB SSD'],
-        rating: 4,
-        reviews: 245,
-        inStock: true,
-        hotSale: true
-      },
-      {
-        id: '2',
-        name: 'Smart Watch Pro',
-        category: 'WEARABLE TECHNOLOGY',
-        price: 299.00,
-        originalPrice: 399.00,
-        image: 'https://picsum.photos/id/237/800/600',
-        description: 'Advanced fitness tracking with heart rate monitor, GPS, and 7-day battery life. Stay connected and healthy with this premium smartwatch.',
-        features: ['GPS', 'Heart Rate', 'Waterproof', '7-Day Battery', 'Fitness Tracking'],
-        rating: 4.5,
-        reviews: 128,
-        inStock: true,
-        hotSale: true
-      },
-      {
-        id: '3',
-        name: 'Wireless Headphones',
-        category: 'AUDIO EQUIPMENT',
-        price: 149.00,
-        originalPrice: 199.00,
-        image: 'https://picsum.photos/id/237/800/600',
-        description: 'Premium sound quality with active noise cancellation and 30-hour battery life. Experience music like never before.',
-        features: ['Noise Cancel', '30h Battery', 'Bluetooth 5.0', 'Premium Sound', 'Comfortable Fit'],
-        rating: 4.2,
-        reviews: 89,
-        inStock: true,
-        hotSale: false
-      }
-    ];
-
-    if (this.productId) {
-      this.product = products.find(p => p.id === this.productId) || products[0];
-    } else {
-      this.product = products[0];
+    if (!this.productId) {
+      this.error = 'ID de producto no válido';
+      this.isLoading = false;
+      return;
     }
+
+    this.isLoading = true;
+    this.error = null;
+
+    this.productSubscription = this.productsService.getById(this.productId).subscribe({
+      next: (product) => {
+        if (product) {
+          this.product = product;
+          this.isLoading = false;
+        } else {
+          this.error = 'Producto no encontrado';
+          this.isLoading = false;
+          this.showErrorAndRedirect('El producto no existe');
+        }
+      },
+      error: (error) => {
+        console.error('Error al cargar producto:', error);
+        this.error = 'Error al cargar el producto';
+        this.isLoading = false;
+        this.showErrorAndRedirect('Error al cargar el producto. Intenta nuevamente.');
+      }
+    });
+  }
+
+  async showErrorAndRedirect(message: string) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      color: 'danger',
+      position: 'bottom'
+    });
+    await toast.present();
+    
+    // Redirigir después de mostrar el error
+    setTimeout(() => {
+      this.routerService.navigate(['/tabs/tab1']);
+    }, 2000);
   }
 
   getStars(rating: number): Array<'full' | 'empty'> {
