@@ -63,7 +63,6 @@ import { Subscription } from 'rxjs';
     IonInput,
     IonTextarea,
     IonCheckbox,
-    IonToast,
     IonSpinner
   ],
 })
