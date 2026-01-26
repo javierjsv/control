@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { 
   Firestore, 
   collection, 
@@ -20,8 +20,7 @@ import { Proveedor } from '../core/interfaces/proveedor.interfaces';
 })
 export class ProveedoresService {
   private readonly collectionName = 'suppliers';
-
-  constructor(private firestore: Firestore) {}
+  private firestore = inject(Firestore);
 
   /**
    * Obtiene todos los proveedores de la colección 'suppliers' en Firestore

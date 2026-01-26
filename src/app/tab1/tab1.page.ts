@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -48,13 +48,13 @@ export class Tab1Page implements OnInit {
   filteredProducts: Product[] = [];
   searchTerm: string = '';
 
-  constructor(
-    private alertController: AlertController,
-    private toastController: ToastController,
-    private router: Router,
-    private  productsService: ProductsService,
-    private loadingService: LoadingService
-  ) {
+  private alertController = inject(AlertController);
+  private toastController = inject(ToastController);
+  private router = inject(Router);
+  private productsService = inject(ProductsService);
+  private loadingService = inject(LoadingService);
+
+  constructor() {
     addIcons({ close });
   }
 

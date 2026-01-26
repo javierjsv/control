@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { 
@@ -22,8 +22,7 @@ import {
   IonTextarea,
   IonSpinner,
   AlertController,
-  ToastController,
-  LoadingController
+  ToastController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { add, create, trash, close, checkmark, search } from 'ionicons/icons';
@@ -74,14 +73,13 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
   searchTerm: string = '';
   private proveedoresSubscription?: Subscription;
 
-  constructor(
-    private proveedoresService: ProveedoresService,
-    private fb: FormBuilder,
-    private alertController: AlertController,
-    private toastController: ToastController,
-    private loadingController: LoadingController,
-    private loadingService: LoadingService
-  ) {
+  private proveedoresService = inject(ProveedoresService);
+  private fb = inject(FormBuilder);
+  private alertController = inject(AlertController);
+  private toastController = inject(ToastController);
+  private loadingService = inject(LoadingService);
+
+  constructor() {
     addIcons({ add, create, trash, close, checkmark, search });
     
     this.proveedorForm = this.fb.group({

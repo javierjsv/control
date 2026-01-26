@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { IonApp, IonRouterOutlet, IonMenu, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonIcon, IonLabel } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { person, cube, business  , home} from 'ionicons/icons';
@@ -12,10 +12,11 @@ import { LoadingService } from './core/services/loading.service';
   imports: [IonApp, IonRouterOutlet, IonMenu, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonIcon, IonLabel, RouterLink, BabyLoadingComponent],
 })
 export class AppComponent implements OnInit {
+  private loadingService = inject(LoadingService);
   loadingMessage = 'Cargando...';
   showLoading = false;
 
-  constructor(private loadingService: LoadingService) {
+  constructor() {
     addIcons({ person, cube, business , home });
   }
 

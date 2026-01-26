@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { 
@@ -24,8 +24,7 @@ import {
   IonCheckbox,
   IonSpinner,
   AlertController,
-  ToastController,
-  LoadingController
+  ToastController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { add, create, trash, close, checkmark, search } from 'ionicons/icons';
@@ -78,14 +77,13 @@ export class ProductosComponent implements OnInit, OnDestroy {
   searchTerm: string = '';
   private productsSubscription?: Subscription;
 
-  constructor(
-    private productsService: ProductsService,
-    private fb: FormBuilder,
-    private alertController: AlertController,
-    private toastController: ToastController,
-    private loadingController: LoadingController,
-    private loadingService: LoadingService
-  ) {
+  private productsService = inject(ProductsService);
+  private fb = inject(FormBuilder);
+  private alertController = inject(AlertController);
+  private toastController = inject(ToastController);
+  private loadingService = inject(LoadingService);
+
+  constructor() {
     addIcons({ add, create, trash, close, checkmark, search });
     
     this.productForm = this.fb.group({

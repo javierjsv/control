@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { 
@@ -45,16 +45,15 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   productId: string | null = null;
   isLoading = true;
   error: string | null = null;
+  private route = inject(ActivatedRoute);
+  private routerService = inject(Router);
+  private productsService = inject(ProductsService);
+  private toastController = inject(ToastController);
+  private loadingService = inject(LoadingService);
   router = this.routerService; // Exponer router para el template
   private productSubscription?: Subscription;
 
-  constructor(
-    private route: ActivatedRoute,
-    private routerService: Router,
-    private productsService: ProductsService,
-    private toastController: ToastController,
-    private loadingService: LoadingService
-  ) {
+  constructor() {
     addIcons({ alertCircle });
   }
 

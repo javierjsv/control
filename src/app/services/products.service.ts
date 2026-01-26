@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { 
   Firestore, 
   collection, 
@@ -19,8 +19,7 @@ import { Product } from '../core/interfaces/product.interfaces';
 })
 export class ProductsService {
   private readonly collectionName = 'products';
-
-  constructor(private firestore: Firestore) {}
+  private firestore = inject(Firestore);
 
   /**
    * Obtiene todos los productos de la colección 'products' en Firestore
