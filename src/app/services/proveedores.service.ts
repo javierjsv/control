@@ -13,7 +13,7 @@ import {
   Timestamp
 } from '@angular/fire/firestore';
 import { Observable, map } from 'rxjs';
-import { Proveedor } from '../models/proveedor.model';
+import { Proveedor } from '../core/interfaces/proveedor.interfaces';
 
 @Injectable({
   providedIn: 'root'

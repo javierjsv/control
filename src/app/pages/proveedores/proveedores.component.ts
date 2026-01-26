@@ -28,7 +28,7 @@ import {
 import { addIcons } from 'ionicons';
 import { add, create, trash, close, checkmark, search } from 'ionicons/icons';
 import { ProveedoresService } from '../../services/proveedores.service';
-import { Proveedor } from '../../models/proveedor.model';
+import { Proveedor } from '../../core/interfaces/proveedor.interfaces';
 import { Subscription } from 'rxjs';
 
 @Component({
