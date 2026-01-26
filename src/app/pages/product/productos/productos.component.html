@@ -234,7 +234,15 @@
             <ion-label position="stacked">Rating (0-5)</ion-label>
             <ion-input type="number" formControlName="rating" ></ion-input>
           </ion-item>
-  
+
+          <ion-item>
+            <ion-label position="stacked">Reviews (Número de reseñas) *</ion-label>
+            <ion-input type="number" formControlName="reviews" min="0" step="1"></ion-input>
+          </ion-item>
+          <div *ngIf="productForm.get('reviews')?.invalid && (productForm.get('reviews')?.touched || formSubmitted)" class="error-message">
+            El número de reviews es requerido y debe ser mayor o igual a 0
+          </div>
+
           <ion-item>
             <ion-label>En stock</ion-label>
             <ion-checkbox formControlName="inStock"></ion-checkbox>
