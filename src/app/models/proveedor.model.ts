@@ -1,9 +1,10 @@
 export interface Proveedor {
-  id: number;
-  nombre: string;
-  contacto: string;
-  telefono: string;
+  id: string;
+  name: string;
+  contact: string;
+  company?: string;
+  phone: string;
   email: string;
-  direccion: string;
-  fechaCreacion: Date;
+  address: string;
+  createdAt: Date;
 }

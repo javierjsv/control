@@ -24,6 +24,7 @@ import { addIcons } from 'ionicons';
 import { add, create, trash, close, checkmark } from 'ionicons/icons';
 import { ProveedoresService } from '../../services/proveedores.service';
 import { Proveedor } from '../../models/proveedor.model';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-proveedores',
@@ -55,13 +56,14 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
   proveedores: Proveedor[] = [];
   proveedorEditando: Proveedor | null = null;
   isModalOpen = false;
+  private proveedoresSubscription?: Subscription;
   
   formData = {
-    nombre: '',
-    contacto: '',
-    telefono: '',
+    name: '',
+    contact: '',
+    phone: '',
     email: '',
-    direccion: ''
+    address: ''
   };
 
   constructor(
@@ -73,13 +75,15 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadProveedores();
-    this.proveedoresService.proveedores$.subscribe(proveedores => {
+    this.proveedoresSubscription = this.proveedoresService.proveedores$.subscribe(proveedores => {
       this.proveedores = proveedores;
     });
   }
 
   ngOnDestroy() {
-    // Cleanup si es necesario
+    if (this.proveedoresSubscription) {
+      this.proveedoresSubscription.unsubscribe();
+    }
   }
 
   loadProveedores() {
@@ -90,20 +94,20 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
     if (proveedor) {
       this.proveedorEditando = proveedor;
       this.formData = {
-        nombre: proveedor.nombre,
-        contacto: proveedor.contacto,
-        telefono: proveedor.telefono,
+        name: proveedor.name,
+        contact: proveedor.contact,
+        phone: proveedor.phone,
         email: proveedor.email,
-        direccion: proveedor.direccion
+        address: proveedor.address
       };
     } else {
       this.proveedorEditando = null;
       this.formData = {
-        nombre: '',
-        contacto: '',
-        telefono: '',
+        name: '',
+        contact: '',
+        phone: '',
         email: '',
-        direccion: ''
+        address: ''
       };
     }
     this.isModalOpen = true;
@@ -113,16 +117,16 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
     this.isModalOpen = false;
     this.proveedorEditando = null;
     this.formData = {
-      nombre: '',
-      contacto: '',
-      telefono: '',
+      name: '',
+      contact: '',
+      phone: '',
       email: '',
-      direccion: ''
+      address: ''
     };
   }
 
   async saveProveedor() {
-    if (!this.formData.nombre || !this.formData.contacto) {
+    if (!this.formData.name || !this.formData.contact) {
       const alert = await this.alertController.create({
         header: 'Error',
         message: 'El nombre y el contacto son obligatorios',
@@ -146,7 +150,7 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
   async deleteProveedor(proveedor: Proveedor) {
     const alert = await this.alertController.create({
       header: 'Confirmar eliminación',
-      message: `¿Está seguro de eliminar a ${proveedor.nombre}?`,
+      message: `¿Está seguro de eliminar a ${proveedor.name}?`,
       buttons: [
         {
           text: 'Cancelar',

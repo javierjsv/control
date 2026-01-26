@@ -18,11 +18,35 @@ export class ProveedoresService {
   private loadFromStorage(): void {
     const stored = localStorage.getItem('proveedores');
     if (stored) {
-      this.proveedores = JSON.parse(stored).map((p: any) => ({
-        ...p,
-        fechaCreacion: new Date(p.fechaCreacion)
-      }));
-      this.nextId = Math.max(...this.proveedores.map(p => p.id), 0) + 1;
+      this.proveedores = JSON.parse(stored).map((p: any) => {
+        // Migrar datos antiguos (español) a nuevos (inglés) si es necesario
+        const migrated: Proveedor = {
+          id: p.id,
+          name: p.name || p.nombre,
+          contact: p.contact || p.contacto,
+          phone: p.phone || p.telefono,
+          email: p.email,
+          address: p.address || p.direccion,
+          createdAt: new Date(p.createdAt || p.fechaCreacion)
+        };
+        // Incluir company si existe (nuevo o antiguo)
+        if (p.company !== undefined) {
+          migrated.company = p.company;
+        } else if (p.empresa !== undefined) {
+          migrated.company = p.empresa;
+        }
+        return migrated;
+      });
+      // Calcular el siguiente ID basado en los IDs existentes (convertir a número, encontrar el máximo, y sumar 1)
+      const maxId = this.proveedores.length > 0 
+        ? Math.max(...this.proveedores.map(p => {
+            const numId = parseInt(p.id, 10);
+            return isNaN(numId) ? 0 : numId;
+          }), 0)
+        : 0;
+      this.nextId = maxId + 1;
+      // Guardar los datos migrados de vuelta al localStorage
+      this.saveToStorage();
     }
     this.proveedoresSubject.next([...this.proveedores]);
   }
@@ -36,22 +60,22 @@ export class ProveedoresService {
     return [...this.proveedores];
   }
 
-  getById(id: number): Proveedor | undefined {
+  getById(id: string): Proveedor | undefined {
     return this.proveedores.find(p => p.id === id);
   }
 
-  create(proveedor: Omit<Proveedor, 'id' | 'fechaCreacion'>): Proveedor {
+  create(proveedor: Omit<Proveedor, 'id' | 'createdAt'>): Proveedor {
     const newProveedor: Proveedor = {
       ...proveedor,
-      id: this.nextId++,
-      fechaCreacion: new Date()
+      id: String(this.nextId++),
+      createdAt: new Date()
     };
     this.proveedores.push(newProveedor);
     this.saveToStorage();
     return newProveedor;
   }
 
-  update(id: number, proveedor: Partial<Proveedor>): boolean {
+  update(id: string, proveedor: Partial<Proveedor>): boolean {
     const index = this.proveedores.findIndex(p => p.id === id);
     if (index !== -1) {
       this.proveedores[index] = { ...this.proveedores[index], ...proveedor };
@@ -61,7 +85,7 @@ export class ProveedoresService {
     return false;
   }
 
-  delete(id: number): boolean {
+  delete(id: string): boolean {
     const index = this.proveedores.findIndex(p => p.id === id);
     if (index !== -1) {
       this.proveedores.splice(index, 1);
