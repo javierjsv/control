@@ -61,8 +61,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let proveedor of filteredProveedores; let i = index">
-              <td>{{ i + 1 }}</td>
+            <tr *ngFor="let proveedor of paginatedProveedores; let i = index">
+              <td>{{ (pageIndex * pageSize) + i + 1 }}</td>
               <td>
                 <div class="product-name-cell">
                   <span>{{ proveedor.name }}</span>
@@ -88,6 +88,17 @@
             </tr>
           </tbody>
         </table>
+        
+        <!-- Paginación Angular Material -->
+        <mat-paginator
+          [length]="totalItems"
+          [pageSize]="pageSize"
+          [pageIndex]="pageIndex"
+          [pageSizeOptions]="pageSizeOptions"
+          [showFirstLastButtons]="true"
+          (page)="onPageChange($event)"
+          aria-label="Seleccionar página">
+        </mat-paginator>
       </div>
 
       <!-- Vista de Tarjetas para móviles y tablets -->
@@ -119,6 +130,17 @@
           </ion-card>
         </ion-list>
       </div>
+
+      <!-- Infinite Scroll (solo para vista de cards/móvil) -->
+      <ion-infinite-scroll 
+        *ngIf="!searchTerm && hasMore && !isLoading"
+        (ionInfinite)="loadMoreProveedores($event)"
+        threshold="100px">
+        <ion-infinite-scroll-content
+          loadingSpinner="bubbles"
+          loadingText="Cargando más proveedores...">
+        </ion-infinite-scroll-content>
+      </ion-infinite-scroll>
 
       <!-- Mensaje cuando no hay proveedores -->
       <div *ngIf="proveedores.length === 0" class="empty-state">

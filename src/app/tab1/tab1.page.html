@@ -116,4 +116,15 @@
     </ion-card>
   </div>
 
+  <!-- Infinite Scroll -->
+  <ion-infinite-scroll 
+    *ngIf="!searchTerm && hasMore"
+    (ionInfinite)="loadMoreProducts($event)"
+    threshold="100px">
+    <ion-infinite-scroll-content
+      loadingSpinner="bubbles"
+      loadingText="Cargando más productos...">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+
 </ion-content>

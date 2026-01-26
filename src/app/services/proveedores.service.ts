@@ -10,6 +10,11 @@ import {
   deleteDoc, 
   query, 
   orderBy,
+  limit,
+  startAfter,
+  getDocs,
+  QueryDocumentSnapshot,
+  DocumentData,
   Timestamp
 } from '@angular/fire/firestore';
 import { Observable, map } from 'rxjs';
@@ -20,6 +25,7 @@ import { Proveedor } from '../core/interfaces/proveedor.interfaces';
 })
 export class ProveedoresService {
   private readonly collectionName = 'suppliers';
+  private readonly pageSize = 20;
   private firestore = inject(Firestore);
 
   /**
@@ -30,6 +36,56 @@ export class ProveedoresService {
     const suppliersRef = collection(this.firestore, this.collectionName);
     const q = query(suppliersRef, orderBy('name', 'asc'));
     return collectionData(q, { idField: 'id' }) as Observable<Proveedor[]>;
+  }
+
+  /**
+   * Obtiene proveedores paginados (primera página)
+   * @returns Promise con los proveedores y el último documento para la siguiente página
+   */
+  async getPaginated(): Promise<{ proveedores: Proveedor[]; lastDoc: QueryDocumentSnapshot<DocumentData> | null; hasMore: boolean }> {
+    const suppliersRef = collection(this.firestore, this.collectionName);
+    const q = query(
+      suppliersRef, 
+      orderBy('name', 'asc'),
+      limit(this.pageSize)
+    );
+    
+    const snapshot = await getDocs(q);
+    const proveedores = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Proveedor[];
+    
+    const lastDoc = snapshot.docs[snapshot.docs.length - 1] || null;
+    const hasMore = snapshot.docs.length === this.pageSize;
+    
+    return { proveedores, lastDoc, hasMore };
+  }
+
+  /**
+   * Carga más proveedores (siguiente página)
+   * @param lastDoc Último documento de la página anterior
+   * @returns Promise con los proveedores y el último documento para la siguiente página
+   */
+  async loadMore(lastDoc: QueryDocumentSnapshot<DocumentData>): Promise<{ proveedores: Proveedor[]; lastDoc: QueryDocumentSnapshot<DocumentData> | null; hasMore: boolean }> {
+    const suppliersRef = collection(this.firestore, this.collectionName);
+    const q = query(
+      suppliersRef,
+      orderBy('name', 'asc'),
+      startAfter(lastDoc),
+      limit(this.pageSize)
+    );
+    
+    const snapshot = await getDocs(q);
+    const proveedores = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Proveedor[];
+    
+    const newLastDoc = snapshot.docs[snapshot.docs.length - 1] || null;
+    const hasMore = snapshot.docs.length === this.pageSize;
+    
+    return { proveedores, lastDoc: newLastDoc, hasMore };
   }
 
   /**

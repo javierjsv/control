@@ -61,8 +61,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let product of filteredProducts; let i = index">
-              <td>{{ i + 1 }}</td>
+            <tr *ngFor="let product of paginatedProducts; let i = index">
+              <td>{{ (pageIndex * pageSize) + i + 1 }}</td>
               <td>
                 <div class="product-name-cell">
                   <img draggable="false" [src]="product.image" [alt]="product.name" class="table-product-image" />
@@ -93,6 +93,17 @@
             </tr>
           </tbody>
         </table>
+        
+        <!-- Paginación Angular Material -->
+        <mat-paginator
+          [length]="totalItems"
+          [pageSize]="pageSize"
+          [pageIndex]="pageIndex"
+          [pageSizeOptions]="pageSizeOptions"
+          [showFirstLastButtons]="true"
+          (page)="onPageChange($event)"
+          aria-label="Seleccionar página">
+        </mat-paginator>
       </div>
 
       <!-- Vista de Tarjetas para móviles y tablets -->
@@ -130,6 +141,17 @@
           </ion-card>
         </ion-list>
       </div>
+
+      <!-- Infinite Scroll (solo para vista de cards/móvil) -->
+      <ion-infinite-scroll 
+        *ngIf="!searchTerm && hasMore && !isLoading"
+        (ionInfinite)="loadMoreProducts($event)"
+        threshold="100px">
+        <ion-infinite-scroll-content
+          loadingSpinner="bubbles"
+          loadingText="Cargando más productos...">
+        </ion-infinite-scroll-content>
+      </ion-infinite-scroll>
 
       <!-- Mensaje cuando no hay productos -->
       <div *ngIf="products.length === 0" class="empty-state">

@@ -13,6 +13,8 @@ import {
   IonButton, 
   IonIcon, 
   IonCard,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
   AlertController, 
   ToastController 
 } from '@ionic/angular/standalone';
@@ -21,6 +23,7 @@ import { close } from 'ionicons/icons';
 import { Product } from '../core/interfaces/product.interfaces';
 import { ProductsService } from '../services/products.service';
 import { LoadingService } from '../core/services/loading.service';
+import { QueryDocumentSnapshot, DocumentData } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-tab1',
@@ -39,7 +42,9 @@ import { LoadingService } from '../core/services/loading.service';
     IonInput, 
     IonButton, 
     IonIcon, 
-    IonCard
+    IonCard,
+    IonInfiniteScroll,
+    IonInfiniteScrollContent
   ],
 })
 export class Tab1Page implements OnInit {
@@ -47,6 +52,9 @@ export class Tab1Page implements OnInit {
   products: Product[] = [];
   filteredProducts: Product[] = [];
   searchTerm: string = '';
+  private lastDoc: QueryDocumentSnapshot<DocumentData> | null = null;
+  hasMore = true;
+  isLoadingMore = false;
 
   private alertController = inject(AlertController);
   private toastController = inject(ToastController);
@@ -59,20 +67,50 @@ export class Tab1Page implements OnInit {
   }
 
 
-  ngOnInit() {
+  async ngOnInit() {
+    await this.loadProducts();
+  }
+
+  async loadProducts() {
     this.loadingService.show('Cargando productos...');
-    this.productsService.getAll().subscribe({
-      next: (products) => {
-        this.products = products;
-        this.applyFilter();
-        console.log('Productos cargados desde Firestore:', products);
-        this.loadingService.hide();
-      },
-      error: (error) => {
-        console.error('Error al cargar productos:', error);
-        this.loadingService.hide();
+    try {
+      const result = await this.productsService.getPaginated();
+      this.products = result.products;
+      this.lastDoc = result.lastDoc;
+      this.hasMore = result.hasMore;
+      this.applyFilter();
+      console.log('Productos cargados desde Firestore:', this.products);
+      this.loadingService.hide();
+    } catch (error) {
+      console.error('Error al cargar productos:', error);
+      this.loadingService.hide();
+    }
+  }
+
+  async loadMoreProducts(event: any) {
+    if (!this.lastDoc || !this.hasMore || this.isLoadingMore || this.searchTerm) {
+      event.target.complete();
+      return;
+    }
+
+    this.isLoadingMore = true;
+    try {
+      const result = await this.productsService.loadMore(this.lastDoc);
+      this.products = [...this.products, ...result.products];
+      this.lastDoc = result.lastDoc;
+      this.hasMore = result.hasMore;
+      this.applyFilter();
+      this.isLoadingMore = false;
+      event.target.complete();
+      
+      if (!this.hasMore) {
+        event.target.disabled = true;
       }
-    });
+    } catch (error) {
+      console.error('Error al cargar más productos:', error);
+      this.isLoadingMore = false;
+      event.target.complete();
+    }
   }
 
   onSearchChange(event: any) {

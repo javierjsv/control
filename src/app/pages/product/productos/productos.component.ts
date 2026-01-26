@@ -23,6 +23,8 @@ import {
   IonTextarea,
   IonCheckbox,
   IonSpinner,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
   AlertController,
   ToastController
 } from '@ionic/angular/standalone';
@@ -31,6 +33,8 @@ import { add, create, trash, close, checkmark, search } from 'ionicons/icons';
 import { ProductsService } from '../../../services/products.service';
 import { Product } from '../../../core/interfaces/product.interfaces';
 import { LoadingService } from '../../../core/services/loading.service';
+import { QueryDocumentSnapshot, DocumentData } from '@angular/fire/firestore';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -62,7 +66,10 @@ import { Subscription } from 'rxjs';
     IonInput,
     IonTextarea,
     IonCheckbox,
-    IonSpinner
+    IonSpinner,
+    IonInfiniteScroll,
+    IonInfiniteScrollContent,
+    MatPaginatorModule
   ],
 })
 export class ProductosComponent implements OnInit, OnDestroy {
@@ -76,6 +83,16 @@ export class ProductosComponent implements OnInit, OnDestroy {
   formSubmitted = false;
   searchTerm: string = '';
   private productsSubscription?: Subscription;
+  private lastDoc: QueryDocumentSnapshot<DocumentData> | null = null;
+  hasMore = true;
+  isLoadingMore = false;
+  
+  // Paginación para tabla
+  paginatedProducts: Product[] = [];
+  pageSize = 10;
+  pageIndex = 0;
+  pageSizeOptions = [5, 10, 20, 50];
+  totalItems = 0;
 
   private productsService = inject(ProductsService);
   private fb = inject(FormBuilder);
@@ -111,23 +128,51 @@ export class ProductosComponent implements OnInit, OnDestroy {
     }
   }
 
-  loadProducts() {
+  async loadProducts() {
     this.isLoading = true;
     this.loadingService.show('Cargando productos...');
-    this.productsSubscription = this.productsService.getAll().subscribe({
-      next: (products) => {
-        this.products = products;
-        this.applyFilter();
-        this.isLoading = false;
-        this.loadingService.hide();
-      },
-      error: (error) => {
-        console.error('Error al cargar productos:', error);
-        this.showToast('Error al cargar productos', 'danger');
-        this.isLoading = false;
-        this.loadingService.hide();
+    try {
+      const result = await this.productsService.getPaginated();
+      this.products = result.products;
+      this.lastDoc = result.lastDoc;
+      this.hasMore = result.hasMore;
+      this.applyFilter();
+      this.updatePaginatedProducts();
+      this.isLoading = false;
+      this.loadingService.hide();
+    } catch (error) {
+      console.error('Error al cargar productos:', error);
+      this.showToast('Error al cargar productos', 'danger');
+      this.isLoading = false;
+      this.loadingService.hide();
+    }
+  }
+
+  async loadMoreProducts(event: any) {
+    if (!this.lastDoc || !this.hasMore || this.isLoadingMore || this.searchTerm) {
+      event.target.complete();
+      return;
+    }
+
+    this.isLoadingMore = true;
+    try {
+      const result = await this.productsService.loadMore(this.lastDoc);
+      this.products = [...this.products, ...result.products];
+      this.lastDoc = result.lastDoc;
+      this.hasMore = result.hasMore;
+      this.applyFilter();
+      this.isLoadingMore = false;
+      event.target.complete();
+      
+      if (!this.hasMore) {
+        event.target.disabled = true;
       }
-    });
+    } catch (error) {
+      console.error('Error al cargar más productos:', error);
+      this.showToast('Error al cargar más productos', 'danger');
+      this.isLoadingMore = false;
+      event.target.complete();
+    }
   }
 
   onSearchChange(event: any) {
@@ -144,6 +189,20 @@ export class ProductosComponent implements OnInit, OnDestroy {
         product.name.toLowerCase().includes(searchLower)
       );
     }
+    this.updatePaginatedProducts();
+  }
+
+  updatePaginatedProducts() {
+    this.totalItems = this.filteredProducts.length;
+    const startIndex = this.pageIndex * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.paginatedProducts = this.filteredProducts.slice(startIndex, endIndex);
+  }
+
+  onPageChange(event: PageEvent) {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.updatePaginatedProducts();
   }
 
   clearSearch() {
@@ -269,7 +328,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
       }
 
       // Recargar productos y aplicar filtro
-      this.loadProducts();
+      await this.loadProducts();
       this.closeModal();
     } catch (error) {
       console.error('Error al guardar producto:', error);
@@ -304,7 +363,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
               await this.productsService.delete(product.id!);
               this.showToast('Producto eliminado correctamente', 'success');
               // Recargar productos y aplicar filtro
-              this.loadProducts();
+              await this.loadProducts();
             } catch (error) {
               console.error('Error al eliminar producto:', error);
               this.showToast('Error al eliminar el producto', 'danger');

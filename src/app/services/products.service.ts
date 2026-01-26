@@ -9,7 +9,12 @@ import {
   updateDoc, 
   deleteDoc, 
   query, 
-  orderBy 
+  orderBy,
+  limit,
+  startAfter,
+  getDocs,
+  QueryDocumentSnapshot,
+  DocumentData
 } from '@angular/fire/firestore';
 import { Observable, from, map } from 'rxjs';
 import { Product } from '../core/interfaces/product.interfaces';
@@ -19,6 +24,7 @@ import { Product } from '../core/interfaces/product.interfaces';
 })
 export class ProductsService {
   private readonly collectionName = 'products';
+  private readonly pageSize = 20;
   private firestore = inject(Firestore);
 
   /**
@@ -29,6 +35,56 @@ export class ProductsService {
     const productsRef = collection(this.firestore, this.collectionName);
     const q = query(productsRef, orderBy('name', 'asc'));
     return collectionData(q, { idField: 'id' }) as Observable<Product[]>;
+  }
+
+  /**
+   * Obtiene productos paginados (primera página)
+   * @returns Promise con los productos y el último documento para la siguiente página
+   */
+  async getPaginated(): Promise<{ products: Product[]; lastDoc: QueryDocumentSnapshot<DocumentData> | null; hasMore: boolean }> {
+    const productsRef = collection(this.firestore, this.collectionName);
+    const q = query(
+      productsRef, 
+      orderBy('name', 'asc'),
+      limit(this.pageSize)
+    );
+    
+    const snapshot = await getDocs(q);
+    const products = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Product[];
+    
+    const lastDoc = snapshot.docs[snapshot.docs.length - 1] || null;
+    const hasMore = snapshot.docs.length === this.pageSize;
+    
+    return { products, lastDoc, hasMore };
+  }
+
+  /**
+   * Carga más productos (siguiente página)
+   * @param lastDoc Último documento de la página anterior
+   * @returns Promise con los productos y el último documento para la siguiente página
+   */
+  async loadMore(lastDoc: QueryDocumentSnapshot<DocumentData>): Promise<{ products: Product[]; lastDoc: QueryDocumentSnapshot<DocumentData> | null; hasMore: boolean }> {
+    const productsRef = collection(this.firestore, this.collectionName);
+    const q = query(
+      productsRef,
+      orderBy('name', 'asc'),
+      startAfter(lastDoc),
+      limit(this.pageSize)
+    );
+    
+    const snapshot = await getDocs(q);
+    const products = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Product[];
+    
+    const newLastDoc = snapshot.docs[snapshot.docs.length - 1] || null;
+    const hasMore = snapshot.docs.length === this.pageSize;
+    
+    return { products, lastDoc: newLastDoc, hasMore };
   }
 
   /**

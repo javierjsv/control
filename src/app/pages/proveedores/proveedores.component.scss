@@ -251,3 +251,37 @@ h2 {
     display: none;
   }
 }
+
+// Estilos para Angular Material Paginator
+.table-view {
+  mat-paginator {
+    margin-top: 1rem;
+    background: white;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    
+    ::ng-deep {
+      .mat-mdc-paginator-container {
+        padding: 0.75rem 1rem;
+      }
+      
+      .mat-mdc-paginator-page-size-label,
+      .mat-mdc-paginator-range-label {
+        color: var(--ion-color-dark);
+        font-size: 0.9rem;
+      }
+      
+      .mat-mdc-icon-button {
+        color: var(--ion-color-primary);
+        
+        &:disabled {
+          color: var(--ion-color-medium);
+        }
+      }
+      
+      .mat-mdc-select-value {
+        color: var(--ion-color-dark);
+      }
+    }
+  }
+}

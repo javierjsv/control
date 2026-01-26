@@ -21,6 +21,8 @@ import {
   IonInput,
   IonTextarea,
   IonSpinner,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
   AlertController,
   ToastController
 } from '@ionic/angular/standalone';
@@ -29,6 +31,8 @@ import { add, create, trash, close, checkmark, search } from 'ionicons/icons';
 import { ProveedoresService } from '../../services/proveedores.service';
 import { Proveedor } from '../../core/interfaces/proveedor.interfaces';
 import { LoadingService } from '../../core/services/loading.service';
+import { QueryDocumentSnapshot, DocumentData } from '@angular/fire/firestore';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -58,7 +62,10 @@ import { Subscription } from 'rxjs';
     IonModal,
     IonInput,
     IonTextarea,
-    IonSpinner
+    IonSpinner,
+    IonInfiniteScroll,
+    IonInfiniteScrollContent,
+    MatPaginatorModule
   ],
 })
 export class ProveedoresComponent implements OnInit, OnDestroy {
@@ -72,6 +79,16 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
   formSubmitted = false;
   searchTerm: string = '';
   private proveedoresSubscription?: Subscription;
+  private lastDoc: QueryDocumentSnapshot<DocumentData> | null = null;
+  hasMore = true;
+  isLoadingMore = false;
+  
+  // Paginación para tabla
+  paginatedProveedores: Proveedor[] = [];
+  pageSize = 10;
+  pageIndex = 0;
+  pageSizeOptions = [5, 10, 20, 50];
+  totalItems = 0;
 
   private proveedoresService = inject(ProveedoresService);
   private fb = inject(FormBuilder);
@@ -103,23 +120,51 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
     }
   }
 
-  loadProveedores() {
+  async loadProveedores() {
     this.isLoading = true;
     this.loadingService.show('Cargando proveedores...');
-    this.proveedoresSubscription = this.proveedoresService.getAll().subscribe({
-      next: (proveedores) => {
-        this.proveedores = proveedores;
-        this.applyFilter();
-        this.isLoading = false;
-        this.loadingService.hide();
-      },
-      error: (error) => {
-        console.error('Error al cargar proveedores:', error);
-        this.showToast('Error al cargar proveedores', 'danger');
-        this.isLoading = false;
-        this.loadingService.hide();
+    try {
+      const result = await this.proveedoresService.getPaginated();
+      this.proveedores = result.proveedores;
+      this.lastDoc = result.lastDoc;
+      this.hasMore = result.hasMore;
+      this.applyFilter();
+      this.updatePaginatedProveedores();
+      this.isLoading = false;
+      this.loadingService.hide();
+    } catch (error) {
+      console.error('Error al cargar proveedores:', error);
+      this.showToast('Error al cargar proveedores', 'danger');
+      this.isLoading = false;
+      this.loadingService.hide();
+    }
+  }
+
+  async loadMoreProveedores(event: any) {
+    if (!this.lastDoc || !this.hasMore || this.isLoadingMore || this.searchTerm) {
+      event.target.complete();
+      return;
+    }
+
+    this.isLoadingMore = true;
+    try {
+      const result = await this.proveedoresService.loadMore(this.lastDoc);
+      this.proveedores = [...this.proveedores, ...result.proveedores];
+      this.lastDoc = result.lastDoc;
+      this.hasMore = result.hasMore;
+      this.applyFilter();
+      this.isLoadingMore = false;
+      event.target.complete();
+      
+      if (!this.hasMore) {
+        event.target.disabled = true;
       }
-    });
+    } catch (error) {
+      console.error('Error al cargar más proveedores:', error);
+      this.showToast('Error al cargar más proveedores', 'danger');
+      this.isLoadingMore = false;
+      event.target.complete();
+    }
   }
 
   onSearchChange(event: CustomEvent) {
@@ -136,6 +181,20 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
         proveedor.name.toLowerCase().includes(searchLower)
       );
     }
+    this.updatePaginatedProveedores();
+  }
+
+  updatePaginatedProveedores() {
+    this.totalItems = this.filteredProveedores.length;
+    const startIndex = this.pageIndex * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.paginatedProveedores = this.filteredProveedores.slice(startIndex, endIndex);
+  }
+
+  onPageChange(event: PageEvent) {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.updatePaginatedProveedores();
   }
 
   clearSearch() {
@@ -247,7 +306,7 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
       }
 
       // Recargar proveedores y aplicar filtro
-      this.loadProveedores();
+      await this.loadProveedores();
       this.closeModal();
     } catch (error) {
       console.error('Error al guardar proveedor:', error);
@@ -282,7 +341,7 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
               await this.proveedoresService.delete(proveedor.id!);
               this.showToast('Proveedor eliminado correctamente', 'success');
               // Recargar proveedores y aplicar filtro
-              this.loadProveedores();
+              await this.loadProveedores();
             } catch (error) {
               console.error('Error al eliminar proveedor:', error);
               this.showToast('Error al eliminar el proveedor', 'danger');
