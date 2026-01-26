@@ -1,10 +1,23 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, ToastController } from '@ionic/angular';
+import { 
+  IonHeader, 
+  IonToolbar, 
+  IonTitle, 
+  IonContent, 
+  IonButtons,
+  IonBackButton,
+  IonButton,
+  IonIcon,
+  IonSpinner,
+  ToastController
+} from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Product } from 'src/app/core/interfaces/product.interfaces';
-import { ProductsService } from '../../services/products.service';
+import { addIcons } from 'ionicons';
+import { alertCircle } from 'ionicons/icons';
+import { Product } from '../../../core/interfaces/product.interfaces';
+import { ProductsService } from '../../../services/products.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -15,7 +28,15 @@ import { Subscription } from 'rxjs';
   imports: [
     CommonModule,
     FormsModule,
-    IonicModule
+    IonHeader, 
+    IonToolbar, 
+    IonTitle, 
+    IonContent, 
+    IonButtons,
+    IonBackButton,
+    IonButton,
+    IonIcon,
+    IonSpinner
   ],
 })
 export class ProductDetailComponent implements OnInit, OnDestroy {
@@ -31,7 +52,9 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     private routerService: Router,
     private productsService: ProductsService,
     private toastController: ToastController
-  ) {}
+  ) {
+    addIcons({ alertCircle });
+  }
 
   ngOnInit() {
     this.productId = this.route.snapshot.paramMap.get('id');

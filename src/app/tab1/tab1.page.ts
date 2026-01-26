@@ -2,12 +2,24 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonicModule, AlertController, ToastController } from '@ionic/angular';
+import { 
+  IonHeader, 
+  IonToolbar, 
+  IonTitle, 
+  IonContent, 
+  IonItem, 
+  IonLabel, 
+  IonInput, 
+  IonButton, 
+  IonIcon, 
+  IonCard,
+  AlertController, 
+  ToastController 
+} from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { close } from 'ionicons/icons';
 import { Product } from '../core/interfaces/product.interfaces';
 import { ProductsService } from '../services/products.service';
-
-
-
 
 @Component({
   selector: 'app-tab1',
@@ -17,7 +29,16 @@ import { ProductsService } from '../services/products.service';
   imports: [
     CommonModule,
     FormsModule,
-    IonicModule
+    IonHeader, 
+    IonToolbar, 
+    IonTitle, 
+    IonContent, 
+    IonItem, 
+    IonLabel, 
+    IonInput, 
+    IonButton, 
+    IonIcon, 
+    IonCard
   ],
 })
 export class Tab1Page implements OnInit {
@@ -31,7 +52,9 @@ export class Tab1Page implements OnInit {
     private toastController: ToastController,
     private router: Router,
     private  productsService: ProductsService
-  ) {}
+  ) {
+    addIcons({ close });
+  }
 
 
   ngOnInit() {

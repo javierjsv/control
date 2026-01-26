@@ -11,7 +11,7 @@ export const routes: Routes = [
   },
   {
     path: 'productos',
-    loadComponent: () => import('./product/productos/productos.component').then((m) => m.ProductosComponent),
+    loadComponent: () => import('./pages/product/productos/productos.component').then((m) => m.ProductosComponent),
   },
   {
     path: 'proveedores',
@@ -19,6 +19,6 @@ export const routes: Routes = [
   },
   {
     path: 'product/:id',
-    loadComponent: () => import('./product/product-detail/product-detail.component').then((m) => m.ProductDetailComponent),
+    loadComponent: () => import('./pages/product/product-detail/product-detail.component').then((m) => m.ProductDetailComponent),
   },
 ];

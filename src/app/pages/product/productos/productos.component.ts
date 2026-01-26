@@ -22,7 +22,6 @@ import {
   IonInput,
   IonTextarea,
   IonCheckbox,
-  IonToast,
   IonSpinner,
   AlertController,
   ToastController,
@@ -30,8 +29,8 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { add, create, trash, close, checkmark, search } from 'ionicons/icons';
-import { ProductsService } from '../../services/products.service';
-import { Product } from '../../core/interfaces/product.interfaces';
+import { ProductsService } from '../../../services/products.service';
+import { Product } from '../../../core/interfaces/product.interfaces';
 import { Subscription } from 'rxjs';
 
 @Component({
