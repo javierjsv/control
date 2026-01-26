@@ -1,97 +1,101 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { 
+  Firestore, 
+  collection, 
+  collectionData, 
+  doc, 
+  docData, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  orderBy,
+  Timestamp
+} from '@angular/fire/firestore';
+import { Observable, map } from 'rxjs';
 import { Proveedor } from '../models/proveedor.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProveedoresService {
-  private proveedores: Proveedor[] = [];
-  private proveedoresSubject = new BehaviorSubject<Proveedor[]>([]);
-  public proveedores$: Observable<Proveedor[]> = this.proveedoresSubject.asObservable();
-  private nextId = 1;
+  private readonly collectionName = 'suppliers';
 
-  constructor() {
-    this.loadFromStorage();
+  constructor(private firestore: Firestore) {}
+
+  /**
+   * Obtiene todos los proveedores de la colección 'suppliers' en Firestore
+   * @returns Observable con un array de proveedores
+   */
+  getAll(): Observable<Proveedor[]> {
+    const suppliersRef = collection(this.firestore, this.collectionName);
+    const q = query(suppliersRef, orderBy('name', 'asc'));
+    return collectionData(q, { idField: 'id' }) as Observable<Proveedor[]>;
   }
 
-  private loadFromStorage(): void {
-    const stored = localStorage.getItem('proveedores');
-    if (stored) {
-      this.proveedores = JSON.parse(stored).map((p: any) => {
-        // Migrar datos antiguos (español) a nuevos (inglés) si es necesario
-        const migrated: Proveedor = {
-          id: p.id,
-          name: p.name || p.nombre,
-          contact: p.contact || p.contacto,
-          phone: p.phone || p.telefono,
-          email: p.email,
-          address: p.address || p.direccion,
-          createdAt: new Date(p.createdAt || p.fechaCreacion)
-        };
-        // Incluir company si existe (nuevo o antiguo)
-        if (p.company !== undefined) {
-          migrated.company = p.company;
-        } else if (p.empresa !== undefined) {
-          migrated.company = p.empresa;
-        }
-        return migrated;
-      });
-      // Calcular el siguiente ID basado en los IDs existentes (convertir a número, encontrar el máximo, y sumar 1)
-      const maxId = this.proveedores.length > 0 
-        ? Math.max(...this.proveedores.map(p => {
-            const numId = parseInt(p.id, 10);
-            return isNaN(numId) ? 0 : numId;
-          }), 0)
-        : 0;
-      this.nextId = maxId + 1;
-      // Guardar los datos migrados de vuelta al localStorage
-      this.saveToStorage();
-    }
-    this.proveedoresSubject.next([...this.proveedores]);
+  /**
+   * Obtiene un proveedor por su ID
+   * @param id ID del proveedor
+   * @returns Observable con el proveedor
+   */
+  getById(id: string): Observable<Proveedor> {
+    const supplierRef = doc(this.firestore, this.collectionName, id);
+    return docData(supplierRef, { idField: 'id' }) as Observable<Proveedor>;
   }
 
-  private saveToStorage(): void {
-    localStorage.setItem('proveedores', JSON.stringify(this.proveedores));
-    this.proveedoresSubject.next([...this.proveedores]);
-  }
-
-  getAll(): Proveedor[] {
-    return [...this.proveedores];
-  }
-
-  getById(id: string): Proveedor | undefined {
-    return this.proveedores.find(p => p.id === id);
-  }
-
-  create(proveedor: Omit<Proveedor, 'id' | 'createdAt'>): Proveedor {
-    const newProveedor: Proveedor = {
-      ...proveedor,
-      id: String(this.nextId++),
-      createdAt: new Date()
+  /**
+   * Crea un nuevo proveedor en Firestore
+   * @param supplier Datos del proveedor (sin id y createdAt)
+   * @returns Promise con el ID del documento creado
+   */
+  async create(supplier: Omit<Proveedor, 'id' | 'createdAt'>): Promise<string> {
+    const suppliersRef = collection(this.firestore, this.collectionName);
+    const supplierData = {
+      ...supplier,
+      createdAt: Timestamp.now()
     };
-    this.proveedores.push(newProveedor);
-    this.saveToStorage();
-    return newProveedor;
+    const docRef = await addDoc(suppliersRef, supplierData);
+    return docRef.id;
   }
 
-  update(id: string, proveedor: Partial<Proveedor>): boolean {
-    const index = this.proveedores.findIndex(p => p.id === id);
-    if (index !== -1) {
-      this.proveedores[index] = { ...this.proveedores[index], ...proveedor };
-      this.saveToStorage();
-      return true;
-    }
-    return false;
+  /**
+   * Actualiza un proveedor existente
+   * @param id ID del proveedor a actualizar
+   * @param supplier Datos parciales del proveedor a actualizar
+   * @returns Promise que se resuelve cuando la actualización es exitosa
+   */
+  async update(id: string, supplier: Partial<Omit<Proveedor, 'id' | 'createdAt'>>): Promise<void> {
+    const supplierRef = doc(this.firestore, this.collectionName, id);
+    return updateDoc(supplierRef, supplier);
   }
 
-  delete(id: string): boolean {
-    const index = this.proveedores.findIndex(p => p.id === id);
-    if (index !== -1) {
-      this.proveedores.splice(index, 1);
-      this.saveToStorage();
-      return true;
+  /**
+   * Elimina un proveedor de Firestore
+   * @param id ID del proveedor a eliminar
+   * @returns Promise que se resuelve cuando la eliminación es exitosa
+   */
+  async delete(id: string): Promise<void> {
+    const supplierRef = doc(this.firestore, this.collectionName, id);
+    return deleteDoc(supplierRef);
+  }
+
+  /**
+   * Filtra proveedores por nombre (búsqueda parcial, case-insensitive)
+   * @param searchTerm Término de búsqueda para filtrar por nombre
+   * @returns Observable con un array de proveedores filtrados
+   */
+  filterByName(searchTerm: string): Observable<Proveedor[]> {
+    if (!searchTerm || searchTerm.trim() === '') {
+      return this.getAll();
     }
-    return false;
+
+    const searchLower = searchTerm.toLowerCase().trim();
+    return this.getAll().pipe(
+      map(suppliers => 
+        suppliers.filter(supplier => 
+          supplier.name.toLowerCase().includes(searchLower)
+        )
+      )
+    );
   }
 }

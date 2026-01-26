@@ -1,10 +1,12 @@
+import { Timestamp } from '@angular/fire/firestore';
+
 export interface Proveedor {
-  id: string;
+  id?: string;
   name: string;
-  contact: string;
+  city: string;
   company?: string;
   phone: string;
   email: string;
   address: string;
-  createdAt: Date;
+  createdAt?: Timestamp | Date;
 }
