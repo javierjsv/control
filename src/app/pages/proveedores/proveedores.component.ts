@@ -103,10 +103,10 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
       name: ['', [Validators.required, Validators.minLength(3)]],
       city: ['', [Validators.required]],
       company: [''],
-      phone: ['', [Validators.required]],
+      phone: ['', [Validators.required, Validators.pattern(/^[0-9-]+$/)]],
       email: ['', [Validators.required, Validators.email]],
       address: ['', [Validators.required]],
-      description: ['']
+      description: [''] // Campo opcional
     });
   }
 
@@ -170,6 +170,19 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
   onSearchChange(event: CustomEvent) {
     this.searchTerm = (event.detail.value as string) || '';
     this.applyFilter();
+  }
+
+  onPhoneInput(event: CustomEvent) {
+    const input = event.target as HTMLInputElement;
+    const value = input.value || '';
+    // Filtrar solo números y guiones
+    const filteredValue = value.replace(/[^0-9-]/g, '');
+    
+    // Actualizar el valor del input y del formulario
+    if (value !== filteredValue) {
+      input.value = filteredValue;
+      this.proveedorForm.patchValue({ phone: filteredValue }, { emitEvent: false });
+    }
   }
 
   applyFilter() {

@@ -202,11 +202,18 @@
   
           <ion-item>
             <ion-label position="stacked">Teléfono *</ion-label>
-            <ion-input type="tel" formControlName="phone"></ion-input>
+            <ion-input 
+              type="tel" 
+              formControlName="phone"
+              (ionInput)="onPhoneInput($event)"
+              inputmode="numeric"
+              pattern="[0-9]*">
+            </ion-input>
           </ion-item>
           <p class="error-message"
              *ngIf="proveedorForm.get('phone')?.invalid && formSubmitted">
-            El teléfono es requerido
+            <span *ngIf="proveedorForm.get('phone')?.errors?.['required']">El teléfono es requerido</span>
+            <span *ngIf="proveedorForm.get('phone')?.errors?.['pattern']">El teléfono solo debe contener números y guiones (-)</span>
           </p>
   
           <ion-item>
