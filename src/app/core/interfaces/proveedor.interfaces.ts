@@ -9,4 +9,5 @@ export interface Proveedor {
   email: string;
   address: string;
   createdAt?: Timestamp | Date;
+  description?: string;
 }

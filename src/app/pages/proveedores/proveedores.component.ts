@@ -88,7 +88,8 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
       company: [''],
       phone: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
-      address: ['', [Validators.required]]
+      address: ['', [Validators.required]],
+      description: ['']
     });
   }
 
@@ -160,7 +161,8 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
         company: proveedor.company || '',
         phone: proveedor.phone,
         email: proveedor.email,
-        address: proveedor.address
+        address: proveedor.address,
+        description: proveedor.description || ''
       }, { emitEvent: false });
       
       // Marcar como pristine y untouched después de cargar los valores
@@ -178,7 +180,8 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
         company: '',
         phone: '',
         email: '',
-        address: ''
+        address: '',
+        description: ''
       }, { emitEvent: false });
     }
     this.isModalOpen = true;
@@ -228,6 +231,11 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
       // Solo incluir company si tiene un valor
       if (formValue.company && formValue.company.trim() !== '') {
         proveedorData.company = formValue.company.trim();
+      }
+
+      // Solo incluir description si tiene un valor
+      if (formValue.description && formValue.description.trim() !== '') {
+        proveedorData.description = formValue.description.trim();
       }
 
       if (this.isEditing && this.editingProveedorId) {

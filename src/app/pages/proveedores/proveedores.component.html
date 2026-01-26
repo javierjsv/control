@@ -204,6 +204,11 @@
              *ngIf="proveedorForm.get('address')?.invalid && formSubmitted">
             La dirección es requerida
           </p>
+
+          <ion-item>
+            <ion-label position="stacked">Descripción (opcional)</ion-label>
+            <ion-textarea rows="4" formControlName="description" placeholder="Descripción adicional del proveedor"></ion-textarea>
+          </ion-item>
   
           <ion-button
             expand="block"
