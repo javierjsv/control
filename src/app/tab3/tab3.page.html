@@ -4,17 +4,71 @@
       <ion-menu-button menu="main-menu"></ion-menu-button>
     </ion-buttons>
     <ion-title>
-      Tab 3
+      Conecta
     </ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" class="social-connect-content">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Tab 3</ion-title>
+      <ion-title size="large">Conecta</ion-title>
     </ion-toolbar>
   </ion-header>
 
-  <app-explore-container name="Tab 3 page"></app-explore-container>
+  <div class="container">
+    <ion-card class="social-card">
+      <!-- Header Section -->
+      <div class="card-header">
+        <ion-icon name="heart" class="heart-icon"></ion-icon>
+        <div class="header-text">
+          <h1>Conecta con nuestra pañalera</h1>
+          <p>Consejos, ofertas y atención rápida para ti y tu bebé</p>
+        </div>
+      </div>
+
+      <!-- Social Media Buttons Grid -->
+      <div class="social-buttons-grid">
+        <ion-button 
+          class="social-button instagram-button" 
+          (click)="openSocialMedia('instagram')"
+          expand="block">
+          <ion-icon name="logo-instagram"></ion-icon>
+          <span>Instagram</span>
+        </ion-button>
+
+        <ion-button 
+          class="social-button facebook-button" 
+          (click)="openSocialMedia('facebook')"
+          expand="block">
+          <ion-icon name="logo-facebook"></ion-icon>
+          <span>Facebook</span>
+        </ion-button>
+
+        <ion-button 
+          class="social-button whatsapp-button" 
+          (click)="openSocialMedia('whatsapp')"
+          expand="block">
+          <ion-icon name="logo-whatsapp"></ion-icon>
+          <span>WhatsApp</span>
+        </ion-button>
+
+        <ion-button 
+          class="social-button tiktok-button" 
+          (click)="openSocialMedia('tiktok')"
+          expand="block">
+          <ion-icon name="musical-notes"></ion-icon>
+          <span>TikTok</span>
+        </ion-button>
+      </div>
+
+      <!-- Bottom Section -->
+      <div class="card-footer">
+        <div class="baby-illustration">
+          <div class="baby-icon">👶</div>
+        </div>
+        <p class="footer-text">Atención rápida y contenido útil</p>
+      </div>
+    </ion-card>
+  </div>
 </ion-content>
