@@ -31,6 +31,7 @@ import { addIcons } from 'ionicons';
 import { add, create, trash, close, checkmark, search } from 'ionicons/icons';
 import { ProductsService } from '../../../services/products.service';
 import { Product } from '../../../core/interfaces/product.interfaces';
+import { LoadingService } from '../../../core/services/loading.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -82,7 +83,8 @@ export class ProductosComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private alertController: AlertController,
     private toastController: ToastController,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private loadingService: LoadingService
   ) {
     addIcons({ add, create, trash, close, checkmark, search });
     
@@ -113,16 +115,19 @@ export class ProductosComponent implements OnInit, OnDestroy {
 
   loadProducts() {
     this.isLoading = true;
+    this.loadingService.show('Cargando productos...');
     this.productsSubscription = this.productsService.getAll().subscribe({
       next: (products) => {
         this.products = products;
         this.applyFilter();
         this.isLoading = false;
+        this.loadingService.hide();
       },
       error: (error) => {
         console.error('Error al cargar productos:', error);
         this.showToast('Error al cargar productos', 'danger');
         this.isLoading = false;
+        this.loadingService.hide();
       }
     });
   }
@@ -227,10 +232,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const loading = await this.loadingController.create({
-      message: this.isEditing ? 'Actualizando producto...' : 'Creando producto...',
-    });
-    await loading.present();
+    this.loadingService.show(this.isEditing ? 'Actualizando producto...' : 'Creando producto...');
 
     try {
       const formValue = this.productForm.value;
@@ -274,8 +276,9 @@ export class ProductosComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Error al guardar producto:', error);
       this.showToast('Error al guardar el producto', 'danger');
+      this.loadingService.hide();
     } finally {
-      await loading.dismiss();
+      this.loadingService.hide();
     }
   }
 
@@ -297,10 +300,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
           text: 'Eliminar',
           role: 'destructive',
           handler: async () => {
-            const loading = await this.loadingController.create({
-              message: 'Eliminando producto...',
-            });
-            await loading.present();
+            this.loadingService.show('Eliminando producto...');
 
             try {
               await this.productsService.delete(product.id!);
@@ -310,8 +310,9 @@ export class ProductosComponent implements OnInit, OnDestroy {
             } catch (error) {
               console.error('Error al eliminar producto:', error);
               this.showToast('Error al eliminar el producto', 'danger');
+              this.loadingService.hide();
             } finally {
-              await loading.dismiss();
+              this.loadingService.hide();
             }
           }
         }

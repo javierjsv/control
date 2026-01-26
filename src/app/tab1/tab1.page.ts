@@ -20,6 +20,7 @@ import { addIcons } from 'ionicons';
 import { close } from 'ionicons/icons';
 import { Product } from '../core/interfaces/product.interfaces';
 import { ProductsService } from '../services/products.service';
+import { LoadingService } from '../core/services/loading.service';
 
 @Component({
   selector: 'app-tab1',
@@ -51,17 +52,26 @@ export class Tab1Page implements OnInit {
     private alertController: AlertController,
     private toastController: ToastController,
     private router: Router,
-    private  productsService: ProductsService
+    private  productsService: ProductsService,
+    private loadingService: LoadingService
   ) {
     addIcons({ close });
   }
 
 
   ngOnInit() {
-    this.productsService.getAll().subscribe(products => {
-      this.products = products;
-      this.applyFilter();
-      console.log('Productos cargados desde Firestore:', products);
+    this.loadingService.show('Cargando productos...');
+    this.productsService.getAll().subscribe({
+      next: (products) => {
+        this.products = products;
+        this.applyFilter();
+        console.log('Productos cargados desde Firestore:', products);
+        this.loadingService.hide();
+      },
+      error: (error) => {
+        console.error('Error al cargar productos:', error);
+        this.loadingService.hide();
+      }
     });
   }
 

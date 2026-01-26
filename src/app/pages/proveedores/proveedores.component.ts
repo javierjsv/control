@@ -29,6 +29,7 @@ import { addIcons } from 'ionicons';
 import { add, create, trash, close, checkmark, search } from 'ionicons/icons';
 import { ProveedoresService } from '../../services/proveedores.service';
 import { Proveedor } from '../../core/interfaces/proveedor.interfaces';
+import { LoadingService } from '../../core/services/loading.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -78,7 +79,8 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private alertController: AlertController,
     private toastController: ToastController,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private loadingService: LoadingService
   ) {
     addIcons({ add, create, trash, close, checkmark, search });
     
@@ -105,16 +107,19 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
 
   loadProveedores() {
     this.isLoading = true;
+    this.loadingService.show('Cargando proveedores...');
     this.proveedoresSubscription = this.proveedoresService.getAll().subscribe({
       next: (proveedores) => {
         this.proveedores = proveedores;
         this.applyFilter();
         this.isLoading = false;
+        this.loadingService.hide();
       },
       error: (error) => {
         console.error('Error al cargar proveedores:', error);
         this.showToast('Error al cargar proveedores', 'danger');
         this.isLoading = false;
+        this.loadingService.hide();
       }
     });
   }
@@ -211,10 +216,7 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const loading = await this.loadingController.create({
-      message: this.isEditing ? 'Actualizando proveedor...' : 'Creando proveedor...',
-    });
-    await loading.present();
+    this.loadingService.show(this.isEditing ? 'Actualizando proveedor...' : 'Creando proveedor...');
 
     try {
       const formValue = this.proveedorForm.value;
@@ -252,8 +254,9 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Error al guardar proveedor:', error);
       this.showToast('Error al guardar el proveedor', 'danger');
+      this.loadingService.hide();
     } finally {
-      await loading.dismiss();
+      this.loadingService.hide();
     }
   }
 
@@ -275,10 +278,7 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
           text: 'Eliminar',
           role: 'destructive',
           handler: async () => {
-            const loading = await this.loadingController.create({
-              message: 'Eliminando proveedor...',
-            });
-            await loading.present();
+            this.loadingService.show('Eliminando proveedor...');
 
             try {
               await this.proveedoresService.delete(proveedor.id!);
@@ -288,8 +288,9 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
             } catch (error) {
               console.error('Error al eliminar proveedor:', error);
               this.showToast('Error al eliminar el proveedor', 'danger');
+              this.loadingService.hide();
             } finally {
-              await loading.dismiss();
+              this.loadingService.hide();
             }
           }
         }

@@ -18,6 +18,7 @@ import { addIcons } from 'ionicons';
 import { alertCircle } from 'ionicons/icons';
 import { Product } from '../../../core/interfaces/product.interfaces';
 import { ProductsService } from '../../../services/products.service';
+import { LoadingService } from '../../../core/services/loading.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -51,7 +52,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private routerService: Router,
     private productsService: ProductsService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private loadingService: LoadingService
   ) {
     addIcons({ alertCircle });
   }
@@ -82,15 +84,18 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
     this.isLoading = true;
     this.error = null;
+    this.loadingService.show('Cargando producto...');
 
     this.productSubscription = this.productsService.getById(this.productId).subscribe({
       next: (product) => {
         if (product) {
           this.product = product;
           this.isLoading = false;
+          this.loadingService.hide();
         } else {
           this.error = 'Producto no encontrado';
           this.isLoading = false;
+          this.loadingService.hide();
           this.showErrorAndRedirect('El producto no existe');
         }
       },
@@ -98,6 +103,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
         console.error('Error al cargar producto:', error);
         this.error = 'Error al cargar el producto';
         this.isLoading = false;
+        this.loadingService.hide();
         this.showErrorAndRedirect('Error al cargar el producto. Intenta nuevamente.');
       }
     });
