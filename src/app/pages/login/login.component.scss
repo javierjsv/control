@@ -191,28 +191,92 @@
 }
 
 .login-button {
-  --background: linear-gradient(135deg, #FFB6C1 0%, #FF91A4 100%);
-  --background-activated: linear-gradient(135deg, #FF91A4 0%, #FF7A8F 100%);
+  --background: #FFB6C1;
+  --background-hover: #FF91A4;
+  --background-activated: #FF91A4;
   --color: white;
   --border-radius: 12px;
   --padding-top: 1rem;
   --padding-bottom: 1rem;
-  font-weight: 600;
-  font-size: 1rem;
   margin-top: 1rem;
-  box-shadow: 0 4px 15px rgba(255, 182, 193, 0.4);
-  transition: all 0.3s ease;
+  box-shadow: none !important;
+  transition: transform 0.2s ease;
+  text-shadow: none !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  filter: none !important;
+  backdrop-filter: none !important;
+  will-change: auto;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+
+  ion-button {
+    text-shadow: none !important;
+    filter: none !important;
+    box-shadow: none !important;
+  }
+
+  &::part(native) {
+    text-shadow: none !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    box-shadow: none !important;
+  }
+
+  &::part(native) span,
+  &::part(native) .button-inner {
+    text-shadow: none !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    filter: none !important;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    box-shadow: none !important;
+  }
 
   &:hover:not([disabled]) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 182, 193, 0.5);
+    transform: translateY(-1px) translateZ(0);
+    box-shadow: none !important;
   }
 
   &[disabled] {
     --background: #E0E0E0;
     --color: #999;
     opacity: 0.6;
+    box-shadow: none !important;
   }
+}
+
+// Estilos adicionales para asegurar nitidez del texto
+.login-button ion-button,
+.login-button .button-inner,
+.login-button .button-text {
+  text-shadow: none !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  filter: none !important;
+  -webkit-backface-visibility: hidden !important;
+  backface-visibility: hidden !important;
+  image-rendering: -webkit-optimize-contrast !important;
+  image-rendering: crisp-edges !important;
+  box-shadow: none !important;
 }
 
 // Decorative Elements
