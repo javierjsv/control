@@ -23,7 +23,9 @@ import {
 import { addIcons } from 'ionicons';
 import { close, search } from 'ionicons/icons';
 import { Product } from '../core/interfaces/product.interfaces';
+import { Category } from '../core/interfaces/category.interfaces';
 import { ProductsService } from '../services/products.service';
+import { CategoriesService } from '../services/categories.service';
 import { LoadingService } from '../core/services/loading.service';
 import { QueryDocumentSnapshot, DocumentData } from '@angular/fire/firestore';
 
@@ -57,6 +59,7 @@ export class Tab1Page implements OnInit {
   filteredProducts: Product[] = [];
   searchTerm: string = '';
   selectedCategory: string = '';
+  categories: Category[] = [];
   private lastDoc: QueryDocumentSnapshot<DocumentData> | null = null;
   hasMore = true;
   isLoadingMore = false;
@@ -66,6 +69,7 @@ export class Tab1Page implements OnInit {
   private router = inject(Router);
   private productsService = inject(ProductsService);
   private loadingService = inject(LoadingService);
+  private categoriesService = inject(CategoriesService);
 
   constructor() {
     addIcons({ close, search });
@@ -74,6 +78,7 @@ export class Tab1Page implements OnInit {
 
   async ngOnInit() {
     await this.loadProducts();
+    this.loadCategories();
   }
 
   async loadProducts() {
@@ -90,6 +95,17 @@ export class Tab1Page implements OnInit {
       console.error('Error al cargar productos:', error);
       this.loadingService.hide();
     }
+  }
+
+  private loadCategories() {
+    this.categoriesService.getAll().subscribe({
+      next: (categories) => {
+        this.categories = categories;
+      },
+      error: (error) => {
+        console.error('Error al cargar categorías:', error);
+      },
+    });
   }
 
   async loadMoreProducts(event: any) {

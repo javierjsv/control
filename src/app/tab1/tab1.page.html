@@ -52,40 +52,13 @@
 
     <!-- Filtros de categoría -->
     <div class="category-filters">
-      <button 
-        class="category-tag" 
-        [class.active]="selectedCategory === 'cremas'"
-        (click)="selectCategory('cremas')">
-        <span class="category-icon">🧴</span>
-        <span class="category-text">Cremas</span>
-      </button>
-      <button 
-        class="category-tag" 
-        [class.active]="selectedCategory === 'pañales'"
-        (click)="selectCategory('pañales')">
-        <span class="category-icon">👶</span>
-        <span class="category-text">Pañales</span>
-      </button>
-      <button 
-        class="category-tag" 
-        [class.active]="selectedCategory === 'toallitas'"
-        (click)="selectCategory('toallitas')">
-        <span class="category-icon">🧻</span>
-        <span class="category-text">Toallitas</span>
-      </button>
-      <button 
-        class="category-tag" 
-        [class.active]="selectedCategory === 'naturales'"
-        (click)="selectCategory('naturales')">
-        <span class="category-icon">🌿</span>
-        <span class="category-text">Naturales</span>
-      </button>
-      <button 
-        class="category-tag" 
-        [class.active]="selectedCategory === 'accesorios'"
-        (click)="selectCategory('accesorios')">
-        <span class="category-icon">🎁</span>
-        <span class="category-text">Accesorios</span>
+      <button
+        class="category-tag"
+        *ngFor="let category of categories"
+        [class.active]="selectedCategory === category.name"
+        (click)="selectCategory(category.name)">
+        <span class="category-icon">{{ category.icon }}</span>
+        <span class="category-text">{{ category.name }}</span>
       </button>
     </div>
   </div>
