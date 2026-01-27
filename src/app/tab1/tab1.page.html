@@ -80,6 +80,13 @@
         <span class="category-icon">🌿</span>
         <span class="category-text">Naturales</span>
       </button>
+      <button 
+        class="category-tag" 
+        [class.active]="selectedCategory === 'accesorios'"
+        (click)="selectCategory('accesorios')">
+        <span class="category-icon">🎁</span>
+        <span class="category-text">Accesorios</span>
+      </button>
     </div>
   </div>
 
