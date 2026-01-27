@@ -5,6 +5,14 @@
     </ion-buttons>
     <ion-title>Productos</ion-title>
     <ion-buttons slot="end">
+      <ion-button 
+        (click)="exportToExcel()" 
+        color="success" 
+        fill="solid"
+        [disabled]="products.length === 0">
+        <ion-icon slot="start" name="download"></ion-icon>
+        <span class="button-text">Excel</span>
+      </ion-button>
       <ion-button (click)="openModal()" color="primary">
         <ion-icon slot="icon-only" name="add"></ion-icon>
       </ion-button>

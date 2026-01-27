@@ -31,7 +31,8 @@ import {
   ToastController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { add, create, trash, close, checkmark, search } from 'ionicons/icons';
+import { add, create, trash, close, checkmark, search, download } from 'ionicons/icons';
+import * as XLSX from 'xlsx';
 import { ProductsService } from '../../../services/products.service';
 import { Product } from '../../../core/interfaces/product.interfaces';
 import { LoadingService } from '../../../core/services/loading.service';
@@ -105,7 +106,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
   private loadingService = inject(LoadingService);
 
   constructor() {
-    addIcons({ add, create, trash, close, checkmark, search });
+    addIcons({ add, create, trash, close, checkmark, search, download });
     
     this.productForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
@@ -225,6 +226,74 @@ export class ProductosComponent implements OnInit, OnDestroy {
       console.error('Error al refrescar productos:', error);
       this.showToast('Error al actualizar productos', 'danger');
       event.target.complete();
+    }
+  }
+
+  /**
+   * Exporta los productos a un archivo Excel (.xlsx)
+   */
+  exportToExcel() {
+    try {
+      // Preparar los datos para Excel
+      const dataToExport = this.products.map((product, index) => ({
+        'N°': index + 1,
+        'Nombre': product.name || '',
+        'Categoría': product.category || '',
+        'Precio': product.price || 0,
+        'Precio Original': product.originalPrice || '',
+        'Descripción': product.description || '',
+        'Características': product.features ? product.features.join(', ') : '',
+        'Rating': product.rating || 0,
+        'Reviews': product.reviews || 0,
+        'En Stock': product.inStock ? 'Sí' : 'No',
+        'Hot Sale': product.hotSale ? 'Sí' : 'No',
+        'URL Imagen': product.image || ''
+      }));
+
+      // Crear el libro de trabajo
+      const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Productos');
+
+      // Ajustar el ancho de las columnas
+      const columnWidths = [
+        { wch: 5 },   // N°
+        { wch: 30 },  // Nombre
+        { wch: 20 },  // Categoría
+        { wch: 12 },  // Precio
+        { wch: 15 },  // Precio Original
+        { wch: 50 },  // Descripción
+        { wch: 40 },  // Características
+        { wch: 8 },   // Rating
+        { wch: 10 },  // Reviews
+        { wch: 10 },  // En Stock
+        { wch: 10 },  // Hot Sale
+        { wch: 50 }   // URL Imagen
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      // Generar el archivo Excel
+      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      
+      // Crear el blob y descargar
+      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Nombre del archivo con fecha
+      const fecha = new Date().toISOString().split('T')[0];
+      link.download = `productos_${fecha}.xlsx`;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      this.showToast(`Se exportaron ${this.products.length} productos correctamente`, 'success');
+    } catch (error) {
+      console.error('Error al exportar a Excel:', error);
+      this.showToast('Error al exportar los productos a Excel', 'danger');
     }
   }
 
