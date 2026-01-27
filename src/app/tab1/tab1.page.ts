@@ -317,4 +317,10 @@ export class Tab1Page implements OnInit {
     return stars;
   }
 
+  truncateDescription(description: string, maxLength: number = 200): string {
+    if (!description) return '';
+    if (description.length <= maxLength) return description;
+    return description.slice(0, maxLength) + '...';
+  }
+
 }

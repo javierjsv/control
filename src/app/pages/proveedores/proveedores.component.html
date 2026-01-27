@@ -6,11 +6,20 @@
     <ion-title>Proveedores</ion-title>
     <ion-buttons slot="end">
       <ion-button 
+        (click)="triggerFileInput()" 
+        color="tertiary" 
+        fill="solid"
+        class="import-button">
+        <ion-icon slot="start" name="cloud-upload" class="icon-visible"></ion-icon>
+        <span class="button-text">Importar</span>
+      </ion-button>
+      <ion-button 
         (click)="exportToExcel()" 
         color="success" 
         fill="solid"
-        [disabled]="proveedores.length === 0">
-        <ion-icon slot="start" name="download"></ion-icon>
+        [disabled]="proveedores.length === 0"
+        class="export-button">
+        <ion-icon slot="start" name="download" class="icon-visible"></ion-icon>
         <span class="button-text">Excel</span>
       </ion-button>
       <ion-button (click)="openModal()" color="primary">
@@ -288,5 +297,13 @@
   
     </ng-template>
   </ion-modal>
+
+  <!-- Input oculto para seleccionar archivo Excel -->
+  <input 
+    type="file" 
+    id="excel-file-input" 
+    accept=".xlsx,.xls" 
+    style="display: none;"
+    (change)="onFileSelected($event)">
   
 </ion-content>

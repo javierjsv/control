@@ -29,7 +29,7 @@ import {
   ToastController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { add, create, trash, close, checkmark, search, download } from 'ionicons/icons';
+import { add, create, trash, close, checkmark, search, download, cloudUpload } from 'ionicons/icons';
 import * as XLSX from 'xlsx';
 import { ProveedoresService } from '../../services/proveedores.service';
 import { Proveedor } from '../../core/interfaces/proveedor.interfaces';
@@ -102,7 +102,7 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
   private loadingService = inject(LoadingService);
 
   constructor() {
-    addIcons({ add, create, trash, close, checkmark, search, download });
+    addIcons({ add, create, trash, close, checkmark, search, download, cloudUpload });
     
     this.proveedorForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
@@ -318,6 +318,259 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Error al exportar a Excel:', error);
       this.showToast('Error al exportar los proveedores a Excel', 'danger');
+    }
+  }
+
+  /**
+   * Abre el selector de archivos para importar Excel
+   */
+  triggerFileInput() {
+    const fileInput = document.getElementById('excel-file-input') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
+  }
+
+  /**
+   * Maneja la selección del archivo Excel para importar
+   */
+  async onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    // Validar que sea un archivo Excel
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+      this.showToast('Por favor selecciona un archivo Excel (.xlsx o .xls)', 'danger');
+      input.value = '';
+      return;
+    }
+
+    try {
+      this.loadingService.show('Leyendo archivo Excel...');
+      
+      // Leer el archivo
+      const arrayBuffer = await file.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      
+      // Obtener la primera hoja
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
+      
+      // Convertir a JSON
+      const data = XLSX.utils.sheet_to_json(worksheet, { raw: false });
+      
+      if (!data || data.length === 0) {
+        this.loadingService.hide();
+        this.showToast('El archivo Excel está vacío o no tiene datos', 'danger');
+        input.value = '';
+        return;
+      }
+
+      // Validar y procesar los datos
+      await this.processExcelData(data);
+      
+      input.value = '';
+    } catch (error) {
+      console.error('Error al leer el archivo Excel:', error);
+      this.loadingService.hide();
+      this.showToast('Error al leer el archivo Excel. Verifica que el archivo no esté corrupto.', 'danger');
+      input.value = '';
+    }
+  }
+
+  /**
+   * Procesa y valida los datos del Excel
+   */
+  async processExcelData(data: any[]) {
+    try {
+      // Columnas requeridas
+      const requiredColumns = ['Nombre', 'Ciudad', 'Teléfono', 'Email', 'Dirección'];
+      const optionalColumns = ['Empresa', 'Descripción'];
+      
+      // Validar que existan las columnas requeridas
+      const firstRow = data[0];
+      const missingColumns: string[] = [];
+      
+      for (const col of requiredColumns) {
+        if (!(col in firstRow)) {
+          missingColumns.push(col);
+        }
+      }
+
+      if (missingColumns.length > 0) {
+        this.loadingService.hide();
+        this.showToast(
+          `El archivo Excel no tiene las columnas requeridas: ${missingColumns.join(', ')}. ` +
+          `Las columnas requeridas son: ${requiredColumns.join(', ')}`,
+          'danger'
+        );
+        return;
+      }
+
+      // Validar y crear proveedores
+      const proveedoresToCreate: Omit<Proveedor, 'id' | 'createdAt'>[] = [];
+      const errors: string[] = [];
+
+      for (let i = 0; i < data.length; i++) {
+        const row = data[i];
+        const rowNumber = i + 2; // +2 porque empieza en 1 y la primera fila es el header
+
+        try {
+          // Validar datos requeridos
+          const name = String(row['Nombre'] || '').trim();
+          const city = String(row['Ciudad'] || '').trim();
+          const phone = String(row['Teléfono'] || '').trim();
+          const email = String(row['Email'] || '').trim();
+          const address = String(row['Dirección'] || '').trim();
+
+          // Validaciones
+          if (!name || name.length < 3) {
+            errors.push(`Fila ${rowNumber}: El nombre es requerido y debe tener al menos 3 caracteres`);
+            continue;
+          }
+
+          if (!city) {
+            errors.push(`Fila ${rowNumber}: La ciudad es requerida`);
+            continue;
+          }
+
+          if (!phone) {
+            errors.push(`Fila ${rowNumber}: El teléfono es requerido`);
+            continue;
+          }
+
+          // Validar formato de teléfono (solo números y guiones)
+          if (!/^[0-9-]+$/.test(phone)) {
+            errors.push(`Fila ${rowNumber}: El teléfono solo debe contener números y guiones (-)`);
+            continue;
+          }
+
+          if (!email) {
+            errors.push(`Fila ${rowNumber}: El email es requerido`);
+            continue;
+          }
+
+          // Validar formato de email
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(email)) {
+            errors.push(`Fila ${rowNumber}: El email no tiene un formato válido`);
+            continue;
+          }
+
+          if (!address) {
+            errors.push(`Fila ${rowNumber}: La dirección es requerida`);
+            continue;
+          }
+
+          // Datos opcionales
+          const company = row['Empresa'] ? String(row['Empresa']).trim() : undefined;
+          const description = row['Descripción'] ? String(row['Descripción']).trim() : undefined;
+
+          // Crear objeto proveedor
+          const proveedorData: Omit<Proveedor, 'id' | 'createdAt'> = {
+            name,
+            city,
+            phone,
+            email,
+            address
+          };
+
+          if (company && company.length > 0) {
+            proveedorData.company = company;
+          }
+
+          if (description && description.length > 0) {
+            proveedorData.description = description;
+          }
+
+          proveedoresToCreate.push(proveedorData);
+        } catch (error) {
+          errors.push(`Fila ${rowNumber}: Error al procesar los datos - ${error}`);
+        }
+      }
+
+      // Mostrar errores si los hay
+      if (errors.length > 0) {
+        this.loadingService.hide();
+        const errorMessage = errors.slice(0, 5).join('\n') + (errors.length > 5 ? `\n... y ${errors.length - 5} errores más` : '');
+        
+        const alert = await this.alertController.create({
+          header: 'Errores de validación',
+          message: `Se encontraron ${errors.length} error(es) en el archivo:\n\n${errorMessage}\n\n¿Deseas continuar con los registros válidos?`,
+          buttons: [
+            {
+              text: 'Cancelar',
+              role: 'cancel'
+            },
+            {
+              text: 'Continuar',
+              handler: async () => {
+                await this.createProveedoresFromExcel(proveedoresToCreate);
+              }
+            }
+          ]
+        });
+        await alert.present();
+        return;
+      }
+
+      // Si no hay errores, crear todos los proveedores
+      await this.createProveedoresFromExcel(proveedoresToCreate);
+
+    } catch (error) {
+      console.error('Error al procesar datos del Excel:', error);
+      this.loadingService.hide();
+      this.showToast('Error al procesar los datos del Excel', 'danger');
+    }
+  }
+
+  /**
+   * Crea los proveedores en Firestore
+   */
+  async createProveedoresFromExcel(proveedores: Omit<Proveedor, 'id' | 'createdAt'>[]) {
+    if (proveedores.length === 0) {
+      this.loadingService.hide();
+      this.showToast('No hay proveedores válidos para crear', 'warning');
+      return;
+    }
+
+    try {
+      this.loadingService.show(`Creando ${proveedores.length} proveedor(es)...`);
+      
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const proveedor of proveedores) {
+        try {
+          await this.proveedoresService.create(proveedor);
+          successCount++;
+        } catch (error) {
+          console.error('Error al crear proveedor:', error);
+          errorCount++;
+        }
+      }
+
+      this.loadingService.hide();
+
+      if (successCount > 0) {
+        this.showToast(
+          `Se importaron ${successCount} proveedor(es) correctamente${errorCount > 0 ? `. ${errorCount} error(es)` : ''}`,
+          successCount === proveedores.length ? 'success' : 'warning'
+        );
+        
+        // Recargar la lista
+        await this.loadProveedores();
+      } else {
+        this.showToast('No se pudo importar ningún proveedor', 'danger');
+      }
+    } catch (error) {
+      console.error('Error al crear proveedores:', error);
+      this.loadingService.hide();
+      this.showToast('Error al crear los proveedores', 'danger');
     }
   }
 

@@ -131,6 +131,41 @@ h2 {
   }
 }
 
+// Estilos para los botones en el toolbar
+ion-toolbar {
+  ion-buttons {
+    display: flex;
+    gap: 0.25rem;
+    
+    ion-button {
+      min-width: auto;
+      
+      &.import-button,
+      &.export-button {
+        .icon-visible {
+          display: inline-block;
+        }
+        
+        .button-text {
+          @media (max-width: 480px) {
+            display: none;
+          }
+        }
+        
+        // En pantallas muy pequeñas, mostrar solo el icono
+        @media (max-width: 360px) {
+          --padding-start: 0.5rem;
+          --padding-end: 0.5rem;
+          
+          ion-icon {
+            margin: 0;
+          }
+        }
+      }
+    }
+  }
+}
+
 .search-container {
   min-width: 300px;
   max-width: 400px;

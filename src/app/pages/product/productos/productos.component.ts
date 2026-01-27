@@ -31,7 +31,7 @@ import {
   ToastController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { add, create, trash, close, checkmark, search, download } from 'ionicons/icons';
+import { add, create, trash, close, checkmark, search, download, cloudUpload } from 'ionicons/icons';
 import * as XLSX from 'xlsx';
 import { ProductsService } from '../../../services/products.service';
 import { Product } from '../../../core/interfaces/product.interfaces';
@@ -106,7 +106,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
   private loadingService = inject(LoadingService);
 
   constructor() {
-    addIcons({ add, create, trash, close, checkmark, search, download });
+    addIcons({ add, create, trash, close, checkmark, search, download, cloudUpload });
     
     this.productForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
@@ -294,6 +294,289 @@ export class ProductosComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Error al exportar a Excel:', error);
       this.showToast('Error al exportar los productos a Excel', 'danger');
+    }
+  }
+
+  /**
+   * Abre el selector de archivos para importar Excel
+   */
+  triggerFileInput() {
+    const fileInput = document.getElementById('excel-file-input') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
+  }
+
+  /**
+   * Maneja la selección del archivo Excel para importar
+   */
+  async onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    // Validar que sea un archivo Excel
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+      this.showToast('Por favor selecciona un archivo Excel (.xlsx o .xls)', 'danger');
+      input.value = '';
+      return;
+    }
+
+    try {
+      this.loadingService.show('Leyendo archivo Excel...');
+      
+      // Leer el archivo
+      const arrayBuffer = await file.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      
+      // Obtener la primera hoja
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
+      
+      // Convertir a JSON
+      const data = XLSX.utils.sheet_to_json(worksheet, { raw: false });
+      
+      if (!data || data.length === 0) {
+        this.loadingService.hide();
+        this.showToast('El archivo Excel está vacío o no tiene datos', 'danger');
+        input.value = '';
+        return;
+      }
+
+      // Validar y procesar los datos
+      await this.processExcelData(data);
+      
+      input.value = '';
+    } catch (error) {
+      console.error('Error al leer el archivo Excel:', error);
+      this.loadingService.hide();
+      this.showToast('Error al leer el archivo Excel. Verifica que el archivo no esté corrupto.', 'danger');
+      input.value = '';
+    }
+  }
+
+  /**
+   * Procesa y valida los datos del Excel
+   */
+  async processExcelData(data: any[]) {
+    try {
+      // Columnas requeridas
+      const requiredColumns = ['Nombre', 'Categoría', 'Precio', 'Descripción', 'URL Imagen', 'Características'];
+      const optionalColumns = ['Precio Original', 'Rating', 'Reviews', 'En Stock', 'Hot Sale'];
+      
+      // Validar que existan las columnas requeridas
+      const firstRow = data[0];
+      const missingColumns: string[] = [];
+      
+      for (const col of requiredColumns) {
+        if (!(col in firstRow)) {
+          missingColumns.push(col);
+        }
+      }
+
+      if (missingColumns.length > 0) {
+        this.loadingService.hide();
+        this.showToast(
+          `El archivo Excel no tiene las columnas requeridas: ${missingColumns.join(', ')}. ` +
+          `Las columnas requeridas son: ${requiredColumns.join(', ')}`,
+          'danger'
+        );
+        return;
+      }
+
+      // Validar y crear productos
+      const productsToCreate: Omit<Product, 'id'>[] = [];
+      const errors: string[] = [];
+
+      for (let i = 0; i < data.length; i++) {
+        const row = data[i];
+        const rowNumber = i + 2; // +2 porque empieza en 1 y la primera fila es el header
+
+        try {
+          // Validar datos requeridos
+          const name = String(row['Nombre'] || '').trim();
+          const category = String(row['Categoría'] || '').trim();
+          const priceStr = String(row['Precio'] || '').trim();
+          const description = String(row['Descripción'] || '').trim();
+          const image = String(row['URL Imagen'] || '').trim();
+          const featuresStr = String(row['Características'] || '').trim();
+
+          // Validaciones
+          if (!name || name.length < 3) {
+            errors.push(`Fila ${rowNumber}: El nombre es requerido y debe tener al menos 3 caracteres`);
+            continue;
+          }
+
+          if (!category) {
+            errors.push(`Fila ${rowNumber}: La categoría es requerida`);
+            continue;
+          }
+
+          if (!priceStr) {
+            errors.push(`Fila ${rowNumber}: El precio es requerido`);
+            continue;
+          }
+
+          const price = parseFloat(priceStr);
+          if (isNaN(price) || price < 0) {
+            errors.push(`Fila ${rowNumber}: El precio debe ser un número válido mayor o igual a 0`);
+            continue;
+          }
+
+          if (!description) {
+            errors.push(`Fila ${rowNumber}: La descripción es requerida`);
+            continue;
+          }
+
+          if (!image) {
+            errors.push(`Fila ${rowNumber}: La URL de la imagen es requerida`);
+            continue;
+          }
+
+          // Validar formato de URL
+          try {
+            new URL(image);
+          } catch {
+            errors.push(`Fila ${rowNumber}: La URL de la imagen no es válida`);
+            continue;
+          }
+
+          if (!featuresStr) {
+            errors.push(`Fila ${rowNumber}: Las características son requeridas`);
+            continue;
+          }
+
+          // Procesar características (separadas por comas)
+          const features = featuresStr.split(',').map(f => f.trim()).filter(f => f.length > 0);
+          if (features.length === 0) {
+            errors.push(`Fila ${rowNumber}: Debe haber al menos una característica`);
+            continue;
+          }
+
+          // Datos opcionales
+          const originalPriceStr = row['Precio Original'] ? String(row['Precio Original']).trim() : '';
+          const originalPrice = originalPriceStr ? (isNaN(parseFloat(originalPriceStr)) ? undefined : parseFloat(originalPriceStr)) : undefined;
+
+          const ratingStr = row['Rating'] ? String(row['Rating']).trim() : '';
+          const rating = ratingStr ? (isNaN(parseFloat(ratingStr)) ? 0 : Math.max(0, Math.min(5, parseFloat(ratingStr)))) : 0;
+
+          const reviewsStr = row['Reviews'] ? String(row['Reviews']).trim() : '';
+          const reviews = reviewsStr ? (isNaN(parseInt(reviewsStr)) ? 0 : parseInt(reviewsStr)) : 0;
+
+          const inStockStr = row['En Stock'] ? String(row['En Stock']).trim().toLowerCase() : 'sí';
+          const inStock = inStockStr === 'sí' || inStockStr === 'si' || inStockStr === 'yes' || inStockStr === 'true' || inStockStr === '1';
+
+          const hotSaleStr = row['Hot Sale'] ? String(row['Hot Sale']).trim().toLowerCase() : '';
+          const hotSale = hotSaleStr === 'sí' || hotSaleStr === 'si' || hotSaleStr === 'yes' || hotSaleStr === 'true' || hotSaleStr === '1';
+
+          // Crear objeto producto
+          const productData: Omit<Product, 'id'> = {
+            name,
+            category,
+            price,
+            description,
+            image,
+            features,
+            rating,
+            reviews,
+            inStock
+          };
+
+          if (originalPrice !== undefined && originalPrice > 0) {
+            productData.originalPrice = originalPrice;
+          }
+
+          if (hotSale) {
+            productData.hotSale = true;
+          }
+
+          productsToCreate.push(productData);
+        } catch (error) {
+          errors.push(`Fila ${rowNumber}: Error al procesar los datos - ${error}`);
+        }
+      }
+
+      // Mostrar errores si los hay
+      if (errors.length > 0) {
+        this.loadingService.hide();
+        const errorMessage = errors.slice(0, 5).join('\n') + (errors.length > 5 ? `\n... y ${errors.length - 5} errores más` : '');
+        
+        const alert = await this.alertController.create({
+          header: 'Errores de validación',
+          message: `Se encontraron ${errors.length} error(es) en el archivo:\n\n${errorMessage}\n\n¿Deseas continuar con los registros válidos?`,
+          buttons: [
+            {
+              text: 'Cancelar',
+              role: 'cancel'
+            },
+            {
+              text: 'Continuar',
+              handler: async () => {
+                await this.createProductsFromExcel(productsToCreate);
+              }
+            }
+          ]
+        });
+        await alert.present();
+        return;
+      }
+
+      // Si no hay errores, crear todos los productos
+      await this.createProductsFromExcel(productsToCreate);
+
+    } catch (error) {
+      console.error('Error al procesar datos del Excel:', error);
+      this.loadingService.hide();
+      this.showToast('Error al procesar los datos del Excel', 'danger');
+    }
+  }
+
+  /**
+   * Crea los productos en Firestore
+   */
+  async createProductsFromExcel(products: Omit<Product, 'id'>[]) {
+    if (products.length === 0) {
+      this.loadingService.hide();
+      this.showToast('No hay productos válidos para crear', 'warning');
+      return;
+    }
+
+    try {
+      this.loadingService.show(`Creando ${products.length} producto(s)...`);
+      
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const product of products) {
+        try {
+          await this.productsService.create(product);
+          successCount++;
+        } catch (error) {
+          console.error('Error al crear producto:', error);
+          errorCount++;
+        }
+      }
+
+      this.loadingService.hide();
+
+      if (successCount > 0) {
+        this.showToast(
+          `Se importaron ${successCount} producto(s) correctamente${errorCount > 0 ? `. ${errorCount} error(es)` : ''}`,
+          successCount === products.length ? 'success' : 'warning'
+        );
+        
+        // Recargar la lista
+        await this.loadProducts();
+      } else {
+        this.showToast('No se pudo importar ningún producto', 'danger');
+      }
+    } catch (error) {
+      console.error('Error al crear productos:', error);
+      this.loadingService.hide();
+      this.showToast('Error al crear los productos', 'danger');
     }
   }
 
