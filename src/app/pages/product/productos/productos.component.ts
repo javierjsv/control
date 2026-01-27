@@ -113,13 +113,17 @@ export class ProductosComponent implements OnInit, OnDestroy {
       category: ['', [Validators.required]],
       price: [0, [Validators.required, Validators.min(0)]],
       originalPrice: [0],
+      priceOffer: [0, [Validators.required, Validators.min(0)]],
       image: ['', [Validators.required]],
       description: ['', [Validators.required, Validators.minLength(10)]],
       features: ['', [Validators.required]], // Se guardará como string y se convertirá a array
       rating: [0, [Validators.required, Validators.min(0), Validators.max(5)]],
       reviews: [0, [Validators.required, Validators.min(0)]],
       inStock: [true],
-      hotSale: [false]
+      hotSale: [false],
+      supplier: ['', [Validators.required]],
+      quantity: [0, [Validators.required, Validators.min(0)]],
+      priceUnit: [0, [Validators.required, Validators.min(0)]]
     });
   }
 
@@ -240,7 +244,8 @@ export class ProductosComponent implements OnInit, OnDestroy {
         'Nombre': product.name || '',
         'Categoría': product.category || '',
         'Precio': product.price || 0,
-        'Precio Original': product.originalPrice || '',
+        'Precio Compra': product.originalPrice || '',
+        'Precio Oferta': product.priceOffer || 0,
         'Descripción': product.description || '',
         'Características': product.features ? product.features.join(', ') : '',
         'Rating': product.rating || 0,
@@ -261,7 +266,8 @@ export class ProductosComponent implements OnInit, OnDestroy {
         { wch: 30 },  // Nombre
         { wch: 20 },  // Categoría
         { wch: 12 },  // Precio
-        { wch: 15 },  // Precio Original
+        { wch: 15 },  // Precio Compra
+        { wch: 15 },  // Precio Oferta
         { wch: 50 },  // Descripción
         { wch: 40 },  // Características
         { wch: 8 },   // Rating
@@ -365,7 +371,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
     try {
       // Columnas requeridas
       const requiredColumns = ['Nombre', 'Categoría', 'Precio', 'Descripción', 'URL Imagen', 'Características'];
-      const optionalColumns = ['Precio Original', 'Rating', 'Reviews', 'En Stock', 'Hot Sale'];
+      const optionalColumns = ['Precio Compra', 'Precio Oferta', 'Rating', 'Reviews', 'En Stock', 'Hot Sale'];
       
       // Validar que existan las columnas requeridas
       const firstRow = data[0];
@@ -457,7 +463,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
           }
 
           // Datos opcionales
-          const originalPriceStr = row['Precio Original'] ? String(row['Precio Original']).trim() : '';
+          const originalPriceStr = row['Precio Compra'] ? String(row['Precio Compra']).trim() : '';
           const originalPrice = originalPriceStr ? (isNaN(parseFloat(originalPriceStr)) ? undefined : parseFloat(originalPriceStr)) : undefined;
 
           const ratingStr = row['Rating'] ? String(row['Rating']).trim() : '';
@@ -472,6 +478,19 @@ export class ProductosComponent implements OnInit, OnDestroy {
           const hotSaleStr = row['Hot Sale'] ? String(row['Hot Sale']).trim().toLowerCase() : '';
           const hotSale = hotSaleStr === 'sí' || hotSaleStr === 'si' || hotSaleStr === 'yes' || hotSaleStr === 'true' || hotSaleStr === '1';
 
+          // Campos adicionales requeridos
+          const supplierStr = row['Proveedor'] ? String(row['Proveedor']).trim() : '';
+          const supplier = supplierStr || '';
+          
+          const quantityStr = row['Cantidad'] ? String(row['Cantidad']).trim() : '0';
+          const quantity = isNaN(parseInt(quantityStr)) ? 0 : parseInt(quantityStr);
+          
+          const priceUnitStr = row['Precio Unitario'] ? String(row['Precio Unitario']).trim() : priceStr;
+          const priceUnit = isNaN(parseFloat(priceUnitStr)) ? price : parseFloat(priceUnitStr);
+
+          const priceOfferStr = row['Precio Oferta'] ? String(row['Precio Oferta']).trim() : priceStr;
+          const priceOffer = isNaN(parseFloat(priceOfferStr)) ? price : parseFloat(priceOfferStr);
+
           // Crear objeto producto
           const productData: Omit<Product, 'id'> = {
             name,
@@ -482,7 +501,11 @@ export class ProductosComponent implements OnInit, OnDestroy {
             features,
             rating,
             reviews,
-            inStock
+            inStock,
+            supplier,
+            quantity,
+            priceUnit,
+            priceOffer
           };
 
           if (originalPrice !== undefined && originalPrice > 0) {
@@ -605,13 +628,17 @@ export class ProductosComponent implements OnInit, OnDestroy {
         category: product.category,
         price: product.price,
         originalPrice: product.originalPrice || 0,
+        priceOffer: product.priceOffer || 0,
         image: product.image,
         description: product.description,
         features: product.features.join(', '), // Convertir array a string separado por comas
         rating: product.rating,
         reviews: product.reviews,
         inStock: product.inStock,
-        hotSale: product.hotSale || false
+        hotSale: product.hotSale || false,
+        supplier: product.supplier || '',
+        quantity: product.quantity || 0,
+        priceUnit: product.priceUnit || 0
       }, { emitEvent: false });
       
       // Marcar como pristine y untouched después de cargar los valores
@@ -628,6 +655,10 @@ export class ProductosComponent implements OnInit, OnDestroy {
         category: '',
         price: 0,
         originalPrice: 0,
+        priceOffer: 0,
+        supplier: '',
+        quantity: 0,
+        priceUnit: 0,
         image: '',
         description: '',
         features: '',
@@ -676,7 +707,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
         .filter((f: string) => f.length > 0);
 
       // Construir el objeto de producto, excluyendo campos undefined
-      const productData: any = {
+      const productData: Omit<Product, 'id'> = {
         name: formValue.name,
         category: formValue.category,
         price: formValue.price,
@@ -686,7 +717,11 @@ export class ProductosComponent implements OnInit, OnDestroy {
         rating: formValue.rating,
         reviews: formValue.reviews,
         inStock: formValue.inStock,
-        hotSale: formValue.hotSale || false
+        hotSale: formValue.hotSale || false,
+        supplier: formValue.supplier,
+        quantity: formValue.quantity,
+        priceUnit: formValue.priceUnit,
+        priceOffer: formValue.priceOffer
       };
 
       // Solo incluir originalPrice si tiene un valor mayor a 0

@@ -109,13 +109,13 @@
         <!-- Precio y botón -->
         <div class="product-pricing-row">
           <div class="pricing-info">
-            <!-- Precio original tachado -->
-            <div class="original-price" *ngIf="product.originalPrice">
-              ${{ product.originalPrice | number:'1.0-0' }}
+            <!-- Precio Compra tachado -->
+            <div class="original-price" *ngIf="product.priceOffer">
+              ${{ product.priceOffer | number:'1.0-0' }}
             </div>
             <!-- Precio actual -->
             <div class="current-price">
-              ${{ product.price | number:'1.0-0' }}
+              ${{ product.priceUnit | number:'1.0-0' }}
             </div>
           </div>
           

@@ -4,6 +4,8 @@ export interface Product {
   category: string;
   price: number;
   originalPrice?: number;
+  priceUnit: number;
+  priceOffer: number;
   image: string;
   description: string;
   features: string[];
@@ -11,4 +13,7 @@ export interface Product {
   reviews: number;
   inStock: boolean;
   hotSale?: boolean;
+  supplier: string;
+  quantity: number;
+  
 }

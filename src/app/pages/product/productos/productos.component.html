@@ -85,8 +85,8 @@
               <th>N°</th>
               <th>Nombre</th>
               <th>Categoría</th>
-              <th>Precio</th>
-              <th>Precio Original</th>
+              <th>Precio Venta</th>
+              <th>Precio Compra</th>
               <th>Estado</th>
               <th>Acción</th>
             </tr>
@@ -151,8 +151,8 @@
                 </ion-card-header>
                 <ion-card-content>
                   <p><strong>Categoría:</strong> {{ product.category }}</p>
-                  <p><strong>Precio:</strong> ${{ product.price | number:'1.2-2' }}</p>
-                  <p *ngIf="product.originalPrice"><strong>Precio Original:</strong> ${{ product.originalPrice | number:'1.2-2' }}</p>
+                  <p><strong>Precio Venta:</strong> ${{ product.price | number:'1.2-2' }}</p>
+                  <p *ngIf="product.originalPrice"><strong>Precio Compra:</strong> ${{ product.originalPrice | number:'1.2-2' }}</p>
                   <p><strong>Descripción:</strong> {{ product.description }}</p>
                   <p><strong>Características:</strong> {{ product.features.join(', ') }}</p>
                   <p><strong>Rating:</strong> {{ product.rating }}/5 ({{ product.reviews }} reviews)</p>
@@ -242,9 +242,45 @@
           </div>
 
           <ion-item>
-            <ion-label position="stacked">Precio Original (opcional)</ion-label>
+            <ion-label position="stacked">Precio Compra (opcional)</ion-label>
             <ion-input type="number" formControlName="originalPrice" placeholder="0.00" step="0.01"></ion-input>
           </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Precio Oferta *</ion-label>
+            <ion-input type="number" formControlName="priceOffer" placeholder="0.00" step="0.01" min="0"></ion-input>
+          </ion-item>
+          <p class="error-message"
+             *ngIf="productForm.get('priceOffer')?.invalid && formSubmitted">
+            El precio de oferta es requerido y debe ser mayor o igual a 0
+          </p>
+
+          <ion-item>
+            <ion-label position="stacked">Proveedor *</ion-label>
+            <ion-input formControlName="supplier" placeholder="Nombre del proveedor"></ion-input>
+          </ion-item>
+          <p class="error-message"
+             *ngIf="productForm.get('supplier')?.invalid && formSubmitted">
+            El proveedor es requerido
+          </p>
+
+          <ion-item>
+            <ion-label position="stacked">Cantidad *</ion-label>
+            <ion-input type="number" formControlName="quantity" placeholder="0" min="0" step="1"></ion-input>
+          </ion-item>
+          <p class="error-message"
+             *ngIf="productForm.get('quantity')?.invalid && formSubmitted">
+            La cantidad es requerida y debe ser mayor o igual a 0
+          </p>
+
+          <ion-item>
+            <ion-label position="stacked">Precio Unitario *</ion-label>
+            <ion-input type="number" formControlName="priceUnit" placeholder="0.00" step="0.01" min="0"></ion-input>
+          </ion-item>
+          <p class="error-message"
+             *ngIf="productForm.get('priceUnit')?.invalid && formSubmitted">
+            El precio unitario es requerido y debe ser mayor o igual a 0
+          </p>
   
           <ion-item>
             <ion-label position="stacked">URL Imagen *</ion-label>
