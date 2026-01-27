@@ -5,6 +5,14 @@
     </ion-buttons>
     <ion-title>Proveedores</ion-title>
     <ion-buttons slot="end">
+      <ion-button 
+        (click)="exportToExcel()" 
+        color="success" 
+        fill="solid"
+        [disabled]="proveedores.length === 0">
+        <ion-icon slot="start" name="download"></ion-icon>
+        <span class="button-text">Excel</span>
+      </ion-button>
       <ion-button (click)="openModal()" color="primary">
         <ion-icon slot="icon-only" name="add"></ion-icon>
       </ion-button>
@@ -33,9 +41,12 @@
     <div *ngIf="!isLoading">
       <div class="header-section">
         <h2>Lista de Proveedores ({{ proveedores.length }})</h2>
+      </div>
+      
+      <div class="search-section">
         <div class="search-container">
           <ion-item class="search-item">
-            <ion-label position="stacked">Buscar por nombre</ion-label>
+            <ion-label position="stacked">Buscar por nombre.</ion-label>
             <ion-input 
               type="text" 
               [value]="searchTerm"

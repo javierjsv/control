@@ -29,7 +29,8 @@ import {
   ToastController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { add, create, trash, close, checkmark, search } from 'ionicons/icons';
+import { add, create, trash, close, checkmark, search, download } from 'ionicons/icons';
+import * as XLSX from 'xlsx';
 import { ProveedoresService } from '../../services/proveedores.service';
 import { Proveedor } from '../../core/interfaces/proveedor.interfaces';
 import { LoadingService } from '../../core/services/loading.service';
@@ -67,6 +68,8 @@ import { Subscription } from 'rxjs';
     IonSpinner,
     IonInfiniteScroll,
     IonInfiniteScrollContent,
+    IonRefresher,
+    IonRefresherContent,
     MatPaginatorModule
   ],
 })
@@ -99,7 +102,7 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
   private loadingService = inject(LoadingService);
 
   constructor() {
-    addIcons({ add, create, trash, close, checkmark, search });
+    addIcons({ add, create, trash, close, checkmark, search, download });
     
     this.proveedorForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
@@ -254,6 +257,67 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
     if (phone && typeof phone === 'string') {
       const cleanPhone = phone.replace(/[-\s]/g, '');
       window.location.href = `tel:${cleanPhone}`;
+    }
+  }
+
+  /**
+   * Exporta los proveedores a un archivo Excel (.xlsx)
+   */
+  exportToExcel() {
+    console.log('exportToExcel');
+    try {
+      // Preparar los datos para Excel
+      const dataToExport = this.proveedores.map((proveedor, index) => ({
+        'N°': index + 1,
+        'Nombre': proveedor.name || '',
+        'Ciudad': proveedor.city || '',
+        'Empresa': proveedor.company || '',
+        'Teléfono': proveedor.phone || '',
+        'Email': proveedor.email || '',
+        'Dirección': proveedor.address || '',
+        'Descripción': proveedor.description || ''
+      }));
+
+      // Crear el libro de trabajo
+      const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Proveedores');
+
+      // Ajustar el ancho de las columnas
+      const columnWidths = [
+        { wch: 5 },   // N°
+        { wch: 25 },  // Nombre
+        { wch: 15 },  // Ciudad
+        { wch: 20 },  // Empresa
+        { wch: 15 },  // Teléfono
+        { wch: 30 },  // Email
+        { wch: 40 },  // Dirección
+        { wch: 50 }   // Descripción
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      // Generar el archivo Excel
+      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      
+      // Crear el blob y descargar
+      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Nombre del archivo con fecha
+      const fecha = new Date().toISOString().split('T')[0];
+      link.download = `proveedores_${fecha}.xlsx`;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      this.showToast(`Se exportaron ${this.proveedores.length} proveedores correctamente`, 'success');
+    } catch (error) {
+      console.error('Error al exportar a Excel:', error);
+      this.showToast('Error al exportar los proveedores a Excel', 'danger');
     }
   }
 
