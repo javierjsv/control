@@ -1,11 +1,7 @@
 import { Component } from '@angular/core';
 import { 
   IonHeader, 
-  IonToolbar, 
-  IonTitle, 
   IonContent, 
-  IonButtons, 
-  IonMenuButton,
   IonCard,
   IonButton,
   IonIcon
@@ -19,11 +15,7 @@ import { heart, logoInstagram, logoFacebook, logoWhatsapp, musicalNotes } from '
   styleUrls: ['tab3.page.scss'],
   imports: [
     IonHeader, 
-    IonToolbar, 
-    IonTitle, 
     IonContent, 
-    IonButtons, 
-    IonMenuButton,
     IonCard,
     IonButton,
     IonIcon

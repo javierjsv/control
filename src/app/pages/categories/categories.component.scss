@@ -136,11 +136,13 @@ ion-toolbar {
           }
         }
 
-        --background: var(--ion-color-primary);
-        --background-hover: var(--ion-color-primary-shade);
-        --background-activated: var(--ion-color-primary-tint);
-        --color: white;
-        box-shadow: 0 2px 8px rgba(var(--ion-color-primary-rgb), 0.3);
+        & {
+          --background: var(--ion-color-primary);
+          --background-hover: var(--ion-color-primary-shade);
+          --background-activated: var(--ion-color-primary-tint);
+          --color: white;
+          box-shadow: 0 2px 8px rgba(var(--ion-color-primary-rgb), 0.3);
+        }
 
         &:hover {
           transform: translateY(-1px);
