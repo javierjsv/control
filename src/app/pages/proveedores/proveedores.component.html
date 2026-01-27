@@ -11,7 +11,7 @@
         fill="solid"
         class="import-button">
         <ion-icon slot="start" name="cloud-upload" class="icon-visible"></ion-icon>
-        <span class="button-text">Importar</span>
+        <span class="button-text">Subir</span>
       </ion-button>
       <ion-button 
         (click)="exportToExcel()" 
@@ -20,10 +20,15 @@
         [disabled]="proveedores.length === 0"
         class="export-button">
         <ion-icon slot="start" name="download" class="icon-visible"></ion-icon>
-        <span class="button-text">Excel</span>
+        <span class="button-text">Descargar</span>
       </ion-button>
-      <ion-button (click)="openModal()" color="primary">
-        <ion-icon slot="icon-only" name="add"></ion-icon>
+      <ion-button 
+        (click)="openModal()" 
+        color="primary" 
+        fill="solid"
+        class="create-button">
+        <ion-icon slot="start" name="add" class="icon-visible"></ion-icon>
+        <span class="button-text">Nuevo</span>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>

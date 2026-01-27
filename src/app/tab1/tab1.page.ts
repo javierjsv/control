@@ -21,7 +21,7 @@ import {
   ToastController 
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { close } from 'ionicons/icons';
+import { close, search } from 'ionicons/icons';
 import { Product } from '../core/interfaces/product.interfaces';
 import { ProductsService } from '../services/products.service';
 import { LoadingService } from '../core/services/loading.service';
@@ -56,6 +56,7 @@ export class Tab1Page implements OnInit {
   products: Product[] = [];
   filteredProducts: Product[] = [];
   searchTerm: string = '';
+  selectedCategory: string = '';
   private lastDoc: QueryDocumentSnapshot<DocumentData> | null = null;
   hasMore = true;
   isLoadingMore = false;
@@ -67,7 +68,7 @@ export class Tab1Page implements OnInit {
   private loadingService = inject(LoadingService);
 
   constructor() {
-    addIcons({ close });
+    addIcons({ close, search });
   }
 
 
@@ -92,7 +93,7 @@ export class Tab1Page implements OnInit {
   }
 
   async loadMoreProducts(event: any) {
-    if (!this.lastDoc || !this.hasMore || this.isLoadingMore || this.searchTerm) {
+    if (!this.lastDoc || !this.hasMore || this.isLoadingMore || this.searchTerm || this.selectedCategory) {
       event.target.complete();
       return;
     }
@@ -140,18 +141,41 @@ export class Tab1Page implements OnInit {
   }
 
   applyFilter() {
-    if (!this.searchTerm || this.searchTerm.trim() === '') {
-      this.filteredProducts = this.products;
-    } else {
-      const searchLower = this.searchTerm.toLowerCase().trim();
-      this.filteredProducts = this.products.filter(product =>
-        product.name.toLowerCase().includes(searchLower)
+    let filtered = this.products;
+
+    // Filtrar por categoría
+    if (this.selectedCategory && this.selectedCategory !== '') {
+      filtered = filtered.filter(product =>
+        product.category.toLowerCase() === this.selectedCategory.toLowerCase()
       );
     }
+
+    // Filtrar por búsqueda
+    if (this.searchTerm && this.searchTerm.trim() !== '') {
+      const searchLower = this.searchTerm.toLowerCase().trim();
+      filtered = filtered.filter(product =>
+        product.name.toLowerCase().includes(searchLower) ||
+        product.description.toLowerCase().includes(searchLower) ||
+        product.category.toLowerCase().includes(searchLower)
+      );
+    }
+
+    this.filteredProducts = filtered;
+  }
+
+  selectCategory(category: string) {
+    if (this.selectedCategory === category) {
+      // Si ya está seleccionada, deseleccionar
+      this.selectedCategory = '';
+    } else {
+      this.selectedCategory = category;
+    }
+    this.applyFilter();
   }
 
   clearSearch() {
     this.searchTerm = '';
+    this.selectedCategory = '';
     this.applyFilter();
   }
 

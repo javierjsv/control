@@ -1,7 +1,17 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Catalogo</ion-title>
-  </ion-toolbar>
+<ion-header class="custom-header">
+  <div class="header-content-wrapper">
+    <!-- Sección de título con icono de bebé -->
+    <div class="header-title-section">
+      <div class="baby-icon-container">
+        <div class="baby-icon">👶</div>
+        <div class="heart-icon">❤️</div>
+      </div>
+      <div class="title-content">
+        <h1 class="main-title">Todo para el cuidado de tu bebé</h1>
+        <p class="subtitle">Encuentra cremitas, pañales y más</p>
+      </div>
+    </div>
+  </div>
 </ion-header>
 
 <ion-content class="ion-padding">
@@ -14,37 +24,76 @@
     </ion-refresher-content>
   </ion-refresher>
 
+  <!-- Header mejorado -->
+  <div class="header-section">
+
+
+    <!-- Barra de búsqueda mejorada -->
+    <div class="search-container">
+      <div class="search-bar">
+        <ion-icon name="search" class="search-icon"></ion-icon>
+        <ion-input 
+          type="text" 
+          [value]="searchTerm"
+          (ionInput)="onSearchChange($event)"
+          placeholder="Buscar cremas, pañales, toallitas..."
+          class="search-input">
+        </ion-input>
+        <ion-button 
+          *ngIf="searchTerm" 
+          (click)="clearSearch()" 
+          fill="clear" 
+          size="small"
+          class="clear-button">
+          <ion-icon slot="icon-only" name="close"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Filtros de categoría -->
+    <div class="category-filters">
+      <button 
+        class="category-tag" 
+        [class.active]="selectedCategory === 'cremas'"
+        (click)="selectCategory('cremas')">
+        <span class="category-icon">🧴</span>
+        <span class="category-text">Cremas</span>
+      </button>
+      <button 
+        class="category-tag" 
+        [class.active]="selectedCategory === 'pañales'"
+        (click)="selectCategory('pañales')">
+        <span class="category-icon">👶</span>
+        <span class="category-text">Pañales</span>
+      </button>
+      <button 
+        class="category-tag" 
+        [class.active]="selectedCategory === 'toallitas'"
+        (click)="selectCategory('toallitas')">
+        <span class="category-icon">🧻</span>
+        <span class="category-text">Toallitas</span>
+      </button>
+      <button 
+        class="category-tag" 
+        [class.active]="selectedCategory === 'naturales'"
+        (click)="selectCategory('naturales')">
+        <span class="category-icon">🌿</span>
+        <span class="category-text">Naturales</span>
+      </button>
+    </div>
+  </div>
+
   <div style="width: 30px; height: 30px;" (click)="openWhatsApp()">
     <img src="assets/icon/icons8-whatsapp-100.png" class="img-whatsapp" alt="Favicon">
   </div>
 
-  <!-- Barra de búsqueda -->
-  <div class="search-container">
-    <ion-item class="search-item">
-      <ion-label position="stacked">Buscar producto</ion-label>
-      <ion-input 
-        type="text" 
-        [value]="searchTerm"
-        (ionInput)="onSearchChange($event)"
-        placeholder="Escribe el nombre del producto..."
-        clearOnEdit="false">
-      </ion-input>
-      <ion-button 
-        *ngIf="searchTerm" 
-        (click)="clearSearch()" 
-        fill="clear" 
-        size="small"
-        slot="end">
-        <ion-icon slot="icon-only" name="close"></ion-icon>
-      </ion-button>
-    </ion-item>
-  </div>
-
   <!-- Mensaje cuando no hay resultados de búsqueda -->
   <div *ngIf="products.length > 0 && filteredProducts.length === 0" class="empty-search-state">
-    <p>No se encontraron productos que coincidan con "{{ searchTerm }}"</p>
+    <p *ngIf="searchTerm">No se encontraron productos que coincidan con "{{ searchTerm }}"</p>
+    <p *ngIf="selectedCategory && !searchTerm">No se encontraron productos en la categoría "{{ selectedCategory }}"</p>
+    <p *ngIf="selectedCategory && searchTerm">No se encontraron productos que coincidan con los filtros aplicados</p>
     <ion-button (click)="clearSearch()" fill="outline" class="ion-margin-top">
-      Limpiar búsqueda
+      Limpiar filtros
     </ion-button>
   </div>
 
@@ -126,7 +175,7 @@
 
   <!-- Infinite Scroll -->
   <ion-infinite-scroll 
-    *ngIf="!searchTerm && hasMore"
+    *ngIf="!searchTerm && !selectedCategory && hasMore"
     (ionInfinite)="loadMoreProducts($event)"
     threshold="100px">
     <ion-infinite-scroll-content

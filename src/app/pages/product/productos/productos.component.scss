@@ -136,12 +136,16 @@ ion-toolbar {
   ion-buttons {
     display: flex;
     gap: 0.25rem;
+    align-items: center;
     
     ion-button {
       min-width: auto;
+      font-weight: 500;
+      transition: all 0.2s ease;
       
       &.import-button,
-      &.export-button {
+      &.export-button,
+      &.create-button {
         .icon-visible {
           display: inline-block;
         }
@@ -159,6 +163,37 @@ ion-toolbar {
           
           ion-icon {
             margin: 0;
+          }
+        }
+      }
+      
+      // Estilo especial para el botón de crear
+      &.create-button {
+        --background: var(--ion-color-primary);
+        --background-hover: var(--ion-color-primary-shade);
+        --background-activated: var(--ion-color-primary-tint);
+        --color: white;
+        box-shadow: 0 2px 8px rgba(var(--ion-color-primary-rgb), 0.3);
+        
+        &:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.4);
+        }
+        
+        &:active {
+          transform: translateY(0);
+        }
+        
+        // En móviles, hacer el botón más compacto pero visible
+        @media (max-width: 480px) {
+          --padding-start: 0.75rem;
+          --padding-end: 0.75rem;
+          min-width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          
+          ion-icon {
+            font-size: 1.5rem;
           }
         }
       }
