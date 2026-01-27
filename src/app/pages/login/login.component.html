@@ -1,0 +1,85 @@
+<ion-content class="login-content">
+  <div class="login-container">
+    <!-- Header Section -->
+    <div class="header-section">
+      <div class="baby-icon-container">
+        <div class="baby-icon">👶</div>
+        <div class="heart-icon">❤️</div>
+      </div>
+      <h1 class="welcome-title">Bienvenido a Pañalera</h1>
+      <p class="welcome-subtitle">Todo para el cuidado de tu bebé</p>
+    </div>
+
+    <!-- Login Form Container -->
+    <div class="form-container">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <!-- Email Input -->
+        <ion-item class="form-item">
+          <ion-icon name="mail" slot="start" class="input-icon"></ion-icon>
+          <ion-label position="stacked" class="form-label">Email</ion-label>
+          <ion-input
+            type="email"
+            formControlName="email"
+            placeholder="mama@example.com"
+            class="form-input">
+          </ion-input>
+        </ion-item>
+        <p class="error-message" *ngIf="loginForm.get('email')?.invalid && formSubmitted">
+          <span *ngIf="loginForm.get('email')?.errors?.['required']">El email es requerido</span>
+          <span *ngIf="loginForm.get('email')?.errors?.['email']">Email inválido</span>
+        </p>
+
+        <!-- Password Input -->
+        <ion-item class="form-item">
+          <ion-icon name="lock-closed" slot="start" class="input-icon"></ion-icon>
+          <ion-label position="stacked" class="form-label">Contraseña</ion-label>
+          <ion-input
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="••••••••"
+            class="form-input">
+          </ion-input>
+          <ion-button
+            fill="clear"
+            slot="end"
+            (click)="togglePasswordVisibility()"
+            class="eye-button">
+            <ion-icon [name]="showPassword ? 'eye-off' : 'eye'" class="eye-icon"></ion-icon>
+          </ion-button>
+        </ion-item>
+        <p class="error-message" *ngIf="loginForm.get('password')?.invalid && formSubmitted">
+          <span *ngIf="loginForm.get('password')?.errors?.['required']">La contraseña es requerida</span>
+          <span *ngIf="loginForm.get('password')?.errors?.['minlength']">La contraseña debe tener al menos 6 caracteres</span>
+        </p>
+
+        <!-- Forgot Password Link -->
+        <div class="forgot-password-container">
+          <a href="#" (click)="onForgotPassword(); $event.preventDefault()" class="forgot-password-link">
+            ¿Olvidaste tu contraseña?
+          </a>
+        </div>
+
+        <!-- Login Button -->
+        <ion-button
+          expand="block"
+          type="submit"
+          class="login-button"
+          [disabled]="loginForm.invalid">
+          Iniciar sesión
+        </ion-button>
+      </form>
+    </div>
+
+    <!-- Decorative Elements -->
+    <div class="decorative-elements">
+      <div class="duck-container">
+        <div class="duck">🦆</div>
+        <div class="hearts-float">💕</div>
+      </div>
+      <div class="bear-container">
+        <div class="bear">🧸</div>
+        <div class="bottle">🍼</div>
+      </div>
+    </div>
+  </div>
+</ion-content>

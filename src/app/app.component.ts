@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { IonApp, IonRouterOutlet, IonMenu, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonIcon, IonLabel } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { person, cube, business, home, pricetags } from 'ionicons/icons';
+import { person, cube, business, home, pricetags, logIn } from 'ionicons/icons';
 import { RouterLink } from '@angular/router';
 import { BabyLoadingComponent } from './core/components/baby-loading/baby-loading.component';
 import { LoadingService } from './core/services/loading.service';
@@ -17,7 +17,7 @@ export class AppComponent implements OnInit {
   showLoading = false;
 
   constructor() {
-    addIcons({ person, cube, business, home, pricetags });
+    addIcons({ person, cube, business, home, pricetags, logIn });
   }
 
   ngOnInit() {
