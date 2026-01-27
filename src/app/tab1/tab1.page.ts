@@ -89,7 +89,6 @@ export class Tab1Page implements OnInit {
       this.lastDoc = result.lastDoc;
       this.hasMore = result.hasMore;
       this.applyFilter();
-      console.log('Productos cargados desde Firestore:', this.products);
       this.loadingService.hide();
     } catch (error) {
       console.error('Error al cargar productos:', error);

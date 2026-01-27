@@ -57,7 +57,7 @@ export class LoginComponent implements OnInit {
     // Verificar si ya está autenticado
     this.auth.onAuthStateChanged((user) => {
       if (user) {
-        this.router.navigate(['/tabs/tab1']);
+        this.router.navigate(['/tabs/tab1'], { replaceUrl: true });
       }
     });
   }

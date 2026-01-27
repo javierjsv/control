@@ -44,7 +44,6 @@ export class AppComponent implements OnInit, OnDestroy {
       this.currentUser = user;
       this.isAuthenticated = !!user;
       this.cdr.detectChanges(); // Forzar detección de cambios
-      console.log('Estado de autenticación:', this.isAuthenticated, user?.email);
     });
   }
 
