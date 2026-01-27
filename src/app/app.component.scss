@@ -1,0 +1,38 @@
+ion-menu {
+  ion-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  ion-list {
+    flex: 1;
+    padding: 0;
+    overflow-y: auto;
+  }
+
+  .logout-section {
+    border-top: 1px solid var(--ion-color-light-shade);
+    margin-top: auto;
+    background: var(--ion-background-color);
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    padding: 0;
+  }
+
+  .logout-item {
+    --background: transparent;
+    --background-hover: var(--ion-color-danger-tint);
+    --color: var(--ion-color-danger);
+    cursor: pointer;
+    
+    ion-label {
+      font-weight: 500;
+    }
+
+    &:hover {
+      --background: var(--ion-color-danger-tint);
+    }
+  }
+}
