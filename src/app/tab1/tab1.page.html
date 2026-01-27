@@ -5,6 +5,14 @@
 </ion-header>
 
 <ion-content class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="arrow-down"
+      pullingText="Arrastra para actualizar"
+      refreshingSpinner="circles"
+      refreshingText="Actualizando...">
+    </ion-refresher-content>
+  </ion-refresher>
 
   <div style="width: 30px; height: 30px;" (click)="openWhatsApp()">
     <img src="assets/icon/icons8-whatsapp-100.png" class="img-whatsapp" alt="Favicon">

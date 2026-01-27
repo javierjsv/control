@@ -13,6 +13,15 @@
 </ion-header>
 
 <ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="arrow-down"
+      pullingText="Arrastra para actualizar"
+      refreshingSpinner="circles"
+      refreshingText="Actualizando...">
+    </ion-refresher-content>
+  </ion-refresher>
+
   <div class="ion-padding">
     <!-- Loading Spinner -->
     <div *ngIf="isLoading" class="loading-container">
@@ -73,7 +82,14 @@
                 <span *ngIf="proveedor.company">{{ proveedor.company }}</span>
                 <span *ngIf="!proveedor.company" class="text-muted">-</span>
               </td>
-              <td>{{ proveedor.phone }}</td>
+              <td>
+                <a [href]="getPhoneLink(proveedor.phone)" 
+                   (click)="callPhone(proveedor.phone, $event)"
+                   class="phone-link"
+                   [attr.aria-label]="'Llamar a ' + proveedor.phone">
+                  {{ proveedor.phone }}
+                </a>
+              </td>
               <td>{{ proveedor.email }}</td>
               <td>
                 <div class="action-buttons">
@@ -113,7 +129,15 @@
                 <ion-card-content>
                   <p><strong>Ciudad:</strong> {{ proveedor.city }}</p>
                   <p *ngIf="proveedor.company"><strong>Empresa:</strong> {{ proveedor.company }}</p>
-                  <p><strong>Teléfono:</strong> {{ proveedor.phone }}</p>
+                  <p>
+                    <strong>Teléfono:</strong> 
+                    <a [href]="getPhoneLink(proveedor.phone)" 
+                       (click)="callPhone(proveedor.phone, $event)"
+                       class="phone-link"
+                       [attr.aria-label]="'Llamar a ' + proveedor.phone">
+                      {{ proveedor.phone }}
+                    </a>
+                  </p>
                   <p><strong>Email:</strong> {{ proveedor.email }}</p>
                   <p><strong>Dirección:</strong> {{ proveedor.address }}</p>
                 </ion-card-content>

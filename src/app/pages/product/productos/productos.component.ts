@@ -25,6 +25,8 @@ import {
   IonSpinner,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
+  IonRefresher,
+  IonRefresherContent,
   AlertController,
   ToastController
 } from '@ionic/angular/standalone';
@@ -69,6 +71,8 @@ import { Subscription } from 'rxjs';
     IonSpinner,
     IonInfiniteScroll,
     IonInfiniteScrollContent,
+    IonRefresher,
+    IonRefresherContent,
     MatPaginatorModule
   ],
 })
@@ -203,6 +207,25 @@ export class ProductosComponent implements OnInit, OnDestroy {
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
     this.updatePaginatedProducts();
+  }
+
+  async doRefresh(event: any) {
+    try {
+      // Resetear paginación
+      this.pageIndex = 0;
+      this.lastDoc = null;
+      this.hasMore = true;
+      
+      // Recargar productos desde el inicio
+      await this.loadProducts();
+      
+      // Completar el refresh
+      event.target.complete();
+    } catch (error) {
+      console.error('Error al refrescar productos:', error);
+      this.showToast('Error al actualizar productos', 'danger');
+      event.target.complete();
+    }
   }
 
   clearSearch() {

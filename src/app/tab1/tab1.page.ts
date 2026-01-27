@@ -15,6 +15,8 @@ import {
   IonCard,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
+  IonRefresher,
+  IonRefresherContent,
   AlertController, 
   ToastController 
 } from '@ionic/angular/standalone';
@@ -44,7 +46,9 @@ import { QueryDocumentSnapshot, DocumentData } from '@angular/fire/firestore';
     IonIcon, 
     IonCard,
     IonInfiniteScroll,
-    IonInfiniteScrollContent
+    IonInfiniteScrollContent,
+    IonRefresher,
+    IonRefresherContent
   ],
 })
 export class Tab1Page implements OnInit {
@@ -109,6 +113,23 @@ export class Tab1Page implements OnInit {
     } catch (error) {
       console.error('Error al cargar más productos:', error);
       this.isLoadingMore = false;
+      event.target.complete();
+    }
+  }
+
+  async doRefresh(event: any) {
+    try {
+      // Resetear paginación
+      this.lastDoc = null;
+      this.hasMore = true;
+      
+      // Recargar productos desde el inicio
+      await this.loadProducts();
+      
+      // Completar el refresh
+      event.target.complete();
+    } catch (error) {
+      console.error('Error al refrescar productos:', error);
       event.target.complete();
     }
   }

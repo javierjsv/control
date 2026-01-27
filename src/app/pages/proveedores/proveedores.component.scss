@@ -252,6 +252,49 @@ h2 {
   }
 }
 
+// Estilos para enlaces de teléfono
+.phone-link {
+  color: var(--ion-color-primary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  
+  &:hover {
+    color: var(--ion-color-primary-shade);
+    text-decoration: underline;
+  }
+  
+  &:active {
+    color: var(--ion-color-primary-tint);
+  }
+  
+  // En móviles, hacer más visible
+  @media (max-width: 768px) {
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    background-color: rgba(var(--ion-color-primary-rgb), 0.1);
+    
+    &:hover {
+      background-color: rgba(var(--ion-color-primary-rgb), 0.2);
+    }
+  }
+  
+  // Agregar icono de teléfono visualmente
+  &::before {
+    content: '📞';
+    font-size: 0.9em;
+    margin-right: 0.25rem;
+    
+    @media (min-width: 769px) {
+      display: none;
+    }
+  }
+}
+
 // Estilos para Angular Material Paginator
 .table-view {
   mat-paginator {

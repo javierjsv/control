@@ -23,6 +23,8 @@ import {
   IonSpinner,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
+  IonRefresher,
+  IonRefresherContent,
   AlertController,
   ToastController
 } from '@ionic/angular/standalone';
@@ -208,6 +210,51 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
     this.updatePaginatedProveedores();
+  }
+
+  async doRefresh(event: any) {
+    try {
+      // Resetear paginación
+      this.pageIndex = 0;
+      this.lastDoc = null;
+      this.hasMore = true;
+      
+      // Recargar proveedores desde el inicio
+      await this.loadProveedores();
+      
+      // Completar el refresh
+      event.target.complete();
+    } catch (error) {
+      console.error('Error al refrescar proveedores:', error);
+      this.showToast('Error al actualizar proveedores', 'danger');
+      event.target.complete();
+    }
+  }
+
+  /**
+   * Genera el enlace tel: para realizar llamadas desde dispositivos móviles
+   * @param phone Número de teléfono
+   * @returns URL con protocolo tel:
+   */
+  getPhoneLink(phone: string | null | undefined): string {
+    if (!phone || typeof phone !== 'string') return '#';
+    // Remover guiones y espacios para el enlace tel:
+    const cleanPhone = phone.replace(/[-\s]/g, '');
+    return `tel:${cleanPhone}`;
+  }
+
+  /**
+   * Maneja el clic en el teléfono para abrir la aplicación de llamadas
+   * @param phone Número de teléfono
+   */
+  callPhone(phone: string | null | undefined, event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    if (phone && typeof phone === 'string') {
+      const cleanPhone = phone.replace(/[-\s]/g, '');
+      window.location.href = `tel:${cleanPhone}`;
+    }
   }
 
   clearSearch() {
