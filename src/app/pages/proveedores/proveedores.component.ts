@@ -111,7 +111,8 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
       phone: ['', [Validators.required, Validators.pattern(/^[0-9-]+$/)]],
       email: ['', [Validators.required, Validators.email]],
       address: ['', [Validators.required]],
-      description: [''] // Campo opcional
+      description: [''], // Campo opcional
+      webSite: [''] // Campo opcional
     });
   }
 
@@ -601,7 +602,8 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
         phone: proveedor.phone,
         email: proveedor.email,
         address: proveedor.address,
-        description: proveedor.description || ''
+        description: proveedor.description || '',
+        webSite: proveedor.webSite || ''
       }, { emitEvent: false });
       
       // Marcar como pristine y untouched después de cargar los valores
@@ -617,6 +619,7 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
         name: '',
         city: '',
         company: '',
+        webSite: '',
         phone: '',
         email: '',
         address: '',
@@ -672,6 +675,11 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
       // Solo incluir description si tiene un valor
       if (formValue.description && formValue.description.trim() !== '') {
         proveedorData.description = formValue.description.trim();
+      }
+
+      // Solo incluir webSite si tiene un valor
+      if (formValue.webSite && formValue.webSite.trim() !== '') {
+        proveedorData.webSite = formValue.webSite.trim();
       }
 
       if (this.isEditing && this.editingProveedorId) {

@@ -10,4 +10,5 @@ export interface Proveedor {
   address: string;
   createdAt?: Timestamp | Date;
   description?: string;
+  webSite?: string;
 }

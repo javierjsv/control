@@ -91,6 +91,7 @@
               <th>Empresa</th>
               <th>Teléfono</th>
               <th>Email</th>
+              <th>Sitio Web</th>
               <th>Acción</th>
             </tr>
           </thead>
@@ -116,6 +117,17 @@
                 </a>
               </td>
               <td>{{ proveedor.email }}</td>
+              <td>
+                <a *ngIf="proveedor.webSite" 
+                   [href]="proveedor.webSite" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   class="website-link"
+                   [attr.aria-label]="'Visitar sitio web de ' + proveedor.name">
+                  {{ proveedor.webSite }}
+                </a>
+                <span *ngIf="!proveedor.webSite" class="text-muted">-</span>
+              </td>
               <td>
                 <div class="action-buttons">
                   <ion-button (click)="openModal(proveedor)" color="warning" fill="clear" size="small">
@@ -165,6 +177,16 @@
                   </p>
                   <p><strong>Email:</strong> {{ proveedor.email }}</p>
                   <p><strong>Dirección:</strong> {{ proveedor.address }}</p>
+                  <p *ngIf="proveedor.webSite">
+                    <strong>Sitio Web:</strong> 
+                    <a [href]="proveedor.webSite" 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       class="website-link"
+                       [attr.aria-label]="'Visitar sitio web de ' + proveedor.name">
+                      {{ proveedor.webSite }}
+                    </a>
+                  </p>
                 </ion-card-content>
               </div>
               <div class="product-actions">
@@ -286,6 +308,11 @@
           <ion-item>
             <ion-label position="stacked">Descripción (opcional)</ion-label>
             <ion-textarea rows="4" formControlName="description" placeholder="Descripción adicional del proveedor"></ion-textarea>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Sitio Web (opcional)</ion-label>
+            <ion-input formControlName="webSite" type="url" placeholder="https://ejemplo.com"></ion-input>
           </ion-item>
   
           <ion-button
