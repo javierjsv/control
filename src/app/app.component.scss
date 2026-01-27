@@ -19,6 +19,8 @@ ion-menu {
     bottom: 0;
     z-index: 10;
     padding: 0;
+    position: fixed;
+    width: 100%;
   }
 
   .logout-item {
