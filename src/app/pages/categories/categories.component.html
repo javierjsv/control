@@ -1,0 +1,235 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Categorías</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        (click)="openModal()"
+        color="primary"
+        fill="solid"
+        class="create-button">
+        <ion-icon slot="start" name="add" class="icon-visible"></ion-icon>
+        <span class="button-text">Nuevo</span>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="arrow-down"
+      pullingText="Arrastra para actualizar"
+      refreshingSpinner="circles"
+      refreshingText="Actualizando...">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <div class="ion-padding">
+    <!-- Loading Spinner -->
+    <div *ngIf="isLoading" class="loading-container">
+      <ion-spinner></ion-spinner>
+      <p>Cargando categorías...</p>
+    </div>
+
+    <!-- Lista de categorías -->
+    <div *ngIf="!isLoading">
+      <div class="header-section">
+        <h2>Lista de Categorías ({{ categories.length }})</h2>
+      </div>
+
+      <div class="search-section">
+        <div class="search-container">
+          <ion-item class="search-item">
+            <ion-label position="stacked">Buscar por nombre.</ion-label>
+            <ion-input
+              type="text"
+              [value]="searchTerm"
+              (ionInput)="onSearchChange($event)"
+              placeholder="Escribe el nombre de la categoría..."
+              clearOnEdit="false">
+            </ion-input>
+            <ion-button
+              *ngIf="searchTerm"
+              (click)="clearSearch()"
+              fill="clear"
+              size="small"
+              slot="end">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </div>
+      </div>
+
+      <!-- Vista de Tabla para pantallas grandes -->
+      <div class="table-view" *ngIf="filteredCategories.length > 0">
+        <table class="products-table">
+          <thead>
+            <tr>
+              <th>N°</th>
+              <th>Nombre</th>
+              <th>Icono</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let category of paginatedCategories; let i = index">
+              <td>{{ (pageIndex * pageSize) + i + 1 }}</td>
+              <td>
+                <div class="category-name-cell">
+                  <span class="category-icon-preview">{{ category.icon }}</span>
+                  <span>{{ category.name }}</span>
+                </div>
+              </td>
+              <td>{{ category.icon }}</td>
+              <td>
+                <div class="action-buttons">
+                  <ion-button
+                    (click)="openModal(category)"
+                    color="warning"
+                    fill="clear"
+                    size="small">
+                    <ion-icon slot="icon-only" name="create"></ion-icon>
+                  </ion-button>
+                  <ion-button
+                    (click)="deleteCategory(category)"
+                    color="danger"
+                    fill="clear"
+                    size="small">
+                    <ion-icon slot="icon-only" name="trash"></ion-icon>
+                  </ion-button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Paginación Angular Material -->
+        <mat-paginator
+          [length]="totalItems"
+          [pageSize]="pageSize"
+          [pageIndex]="pageIndex"
+          [pageSizeOptions]="pageSizeOptions"
+          [showFirstLastButtons]="true"
+          (page)="onPageChange($event)"
+          aria-label="Seleccionar página">
+        </mat-paginator>
+      </div>
+
+      <!-- Vista de Tarjetas para móviles y tablets -->
+      <div class="cards-view" *ngIf="filteredCategories.length > 0">
+        <ion-list>
+          <ion-card *ngFor="let category of filteredCategories" class="category-card">
+            <div class="category-card-content">
+              <div class="category-info">
+                <ion-card-header>
+                  <ion-card-title>
+                    <span class="category-icon-preview">{{ category.icon }}</span>
+                    {{ category.name }}
+                  </ion-card-title>
+                </ion-card-header>
+              </div>
+              <div class="category-actions">
+                <ion-button
+                  (click)="openModal(category)"
+                  color="warning"
+                  fill="outline">
+                  <ion-icon slot="icon-only" name="create"></ion-icon>
+                </ion-button>
+                <ion-button
+                  (click)="deleteCategory(category)"
+                  color="danger"
+                  fill="outline">
+                  <ion-icon slot="icon-only" name="trash"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
+          </ion-card>
+        </ion-list>
+      </div>
+
+      <!-- Infinite Scroll (solo para vista de cards/móvil) -->
+      <ion-infinite-scroll
+        *ngIf="!searchTerm && hasMore && !isLoading"
+        (ionInfinite)="loadMoreCategories($event)"
+        threshold="100px">
+        <ion-infinite-scroll-content
+          loadingSpinner="bubbles"
+          loadingText="Cargando más categorías...">
+        </ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+
+      <!-- Mensaje cuando no hay categorías -->
+      <div *ngIf="categories.length === 0" class="empty-state">
+        <p>No hay categorías registradas. Crea una nueva haciendo clic en el botón Nuevo.</p>
+      </div>
+
+      <!-- Mensaje cuando no hay resultados de búsqueda -->
+      <div
+        *ngIf="categories.length > 0 && filteredCategories.length === 0"
+        class="empty-state">
+        <p>No se encontraron categorías que coincidan con "{{ searchTerm }}"</p>
+        <ion-button (click)="clearSearch()" fill="outline" class="ion-margin-top">
+          Limpiar búsqueda
+        </ion-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para crear/editar categoría -->
+  <ion-modal [isOpen]="isModalOpen" (didDismiss)="closeModal()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>
+            {{ isEditing ? 'Editar Categoría' : 'Nueva Categoría' }}
+          </ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="closeModal()">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="ion-padding">
+        <form [formGroup]="categoryForm" (ngSubmit)="saveCategory()">
+          <ion-item>
+            <ion-label position="stacked">Nombre *</ion-label>
+            <ion-input formControlName="name"></ion-input>
+          </ion-item>
+          <p
+            class="error-message"
+            *ngIf="categoryForm.get('name')?.invalid && formSubmitted">
+            El nombre es requerido y debe tener al menos 3 caracteres
+          </p>
+
+          <ion-item>
+            <ion-label position="stacked">Icono *</ion-label>
+            <ion-input
+              formControlName="icon"
+              placeholder="Ej: 🧴, 👶, 🌿">
+            </ion-input>
+          </ion-item>
+          <p
+            class="error-message"
+            *ngIf="categoryForm.get('icon')?.invalid && formSubmitted">
+            El icono es requerido
+          </p>
+
+          <ion-button
+            expand="block"
+            type="submit"
+            class="ion-margin-top"
+            [disabled]="categoryForm.invalid">
+            <ion-icon slot="start" name="checkmark"></ion-icon>
+            {{ isEditing ? 'Actualizar' : 'Crear' }} Categoría
+          </ion-button>
+        </form>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>
+
