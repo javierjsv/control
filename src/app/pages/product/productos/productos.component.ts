@@ -27,6 +27,8 @@ import {
   IonInfiniteScrollContent,
   IonRefresher,
   IonRefresherContent,
+  IonSelect,
+  IonSelectOption,
   AlertController,
   ToastController
 } from '@ionic/angular/standalone';
@@ -34,7 +36,11 @@ import { addIcons } from 'ionicons';
 import { add, create, trash, close, checkmark, search, download, cloudUpload } from 'ionicons/icons';
 import * as XLSX from 'xlsx';
 import { ProductsService } from '../../../services/products.service';
+import { CategoriesService } from '../../../services/categories.service';
+import { ProveedoresService } from '../../../services/proveedores.service';
 import { Product } from '../../../core/interfaces/product.interfaces';
+import { Category } from '../../../core/interfaces/category.interfaces';
+import { Proveedor } from '../../../core/interfaces/proveedor.interfaces';
 import { LoadingService } from '../../../core/services/loading.service';
 import { QueryDocumentSnapshot, DocumentData } from '@angular/fire/firestore';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
@@ -74,6 +80,8 @@ import { Subscription } from 'rxjs';
     IonInfiniteScrollContent,
     IonRefresher,
     IonRefresherContent,
+    IonSelect,
+    IonSelectOption,
     MatPaginatorModule
   ],
 })
@@ -87,6 +95,8 @@ export class ProductosComponent implements OnInit, OnDestroy {
   isLoading = false;
   formSubmitted = false;
   searchTerm: string = '';
+  categories: Category[] = [];
+  proveedores: Proveedor[] = [];
   private productsSubscription?: Subscription;
   private lastDoc: QueryDocumentSnapshot<DocumentData> | null = null;
   hasMore = true;
@@ -100,6 +110,8 @@ export class ProductosComponent implements OnInit, OnDestroy {
   totalItems = 0;
 
   private productsService = inject(ProductsService);
+  private categoriesService = inject(CategoriesService);
+  private proveedoresService = inject(ProveedoresService);
   private fb = inject(FormBuilder);
   private alertController = inject(AlertController);
   private toastController = inject(ToastController);
@@ -128,6 +140,30 @@ export class ProductosComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadProducts();
+    this.loadCategories();
+    this.loadProveedores();
+  }
+
+  loadCategories() {
+    this.categoriesService.getAll().subscribe({
+      next: (categories) => {
+        this.categories = categories;
+      },
+      error: (error) => {
+        console.error('Error al cargar categorías:', error);
+      }
+    });
+  }
+
+  loadProveedores() {
+    this.proveedoresService.getAll().subscribe({
+      next: (proveedores) => {
+        this.proveedores = proveedores;
+      },
+      error: (error) => {
+        console.error('Error al cargar proveedores:', error);
+      }
+    });
   }
 
   ngOnDestroy() {

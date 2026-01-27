@@ -233,8 +233,16 @@
   
           <ion-item>
             <ion-label position="stacked">Categoría *</ion-label>
-            <ion-input formControlName="category" placeholder="Electrónica , Computadoras, etc."></ion-input>
+            <ion-select formControlName="category" placeholder="Selecciona una categoría">
+              <ion-select-option *ngFor="let category of categories" [value]="category.name">
+                {{ category.icon }} {{ category.name }}
+              </ion-select-option>
+            </ion-select>
           </ion-item>
+          <p class="error-message"
+             *ngIf="productForm.get('category')?.invalid && formSubmitted">
+            La categoría es requerida
+          </p>
   
           <ion-item>
             <ion-label position="stacked">Precio Compra (opcional)</ion-label>
@@ -254,7 +262,11 @@
 
           <ion-item>
             <ion-label position="stacked">Proveedor *</ion-label>
-            <ion-input formControlName="supplier" placeholder="Nombre del proveedor"></ion-input>
+            <ion-select formControlName="supplier" placeholder="Selecciona un proveedor">
+              <ion-select-option *ngFor="let proveedor of proveedores" [value]="proveedor.name">
+                {{ proveedor.name }}
+              </ion-select-option>
+            </ion-select>
           </ion-item>
           <p class="error-message"
              *ngIf="productForm.get('supplier')?.invalid && formSubmitted">
