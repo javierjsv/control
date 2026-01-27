@@ -40,6 +40,7 @@ import { Category } from '../../core/interfaces/category.interfaces';
 import { LoadingService } from '../../core/services/loading.service';
 import { QueryDocumentSnapshot, DocumentData } from '@angular/fire/firestore';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 
 @Component({
   selector: 'app-categories',
@@ -73,6 +74,7 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
     IonRefresher,
     IonRefresherContent,
     MatPaginatorModule,
+    PickerComponent,
   ],
 })
 export class CategoriesComponent implements OnInit {
@@ -213,6 +215,15 @@ export class CategoriesComponent implements OnInit {
   clearSearch() {
     this.searchTerm = '';
     this.applyFilter();
+  }
+
+  onEmojiSelect(event: any) {
+    const emoji =
+      event?.emoji?.native || event?.emoji || event?.native || '';
+    if (!emoji) {
+      return;
+    }
+    this.categoryForm.patchValue({ icon: emoji });
   }
 
   openModal(category?: Category) {

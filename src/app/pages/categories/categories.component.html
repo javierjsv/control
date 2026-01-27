@@ -206,18 +206,27 @@
             El nombre es requerido y debe tener al menos 3 caracteres
           </p>
 
-          <ion-item>
+          <div class="emoji-section">
             <ion-label position="stacked">Icono *</ion-label>
-            <ion-input
-              formControlName="icon"
-              placeholder="Ej: 🧴, 👶, 🌿">
-            </ion-input>
-          </ion-item>
-          <p
-            class="error-message"
-            *ngIf="categoryForm.get('icon')?.invalid && formSubmitted">
-            El icono es requerido
-          </p>
+            <div class="emoji-preview" *ngIf="categoryForm.get('icon')?.value">
+              <span class="category-icon-preview">
+                {{ categoryForm.get('icon')?.value }}
+              </span>
+            </div>
+
+            <emoji-mart
+              (emojiSelect)="onEmojiSelect($event)"
+              (emojiClick)="onEmojiSelect($event)"
+              title="Elige un emoji"
+              emoji="sparkles">
+            </emoji-mart>
+
+            <p
+              class="error-message"
+              *ngIf="categoryForm.get('icon')?.invalid && formSubmitted">
+              El icono es requerido
+            </p>
+          </div>
 
           <ion-button
             expand="block"

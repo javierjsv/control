@@ -68,6 +68,26 @@
   font-size: 1.5rem;
 }
 
+.emoji-section {
+  margin-top: 1rem;
+
+  ion-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--ion-color-primary);
+  }
+
+  .emoji-preview {
+    margin-bottom: 0.5rem;
+  }
+
+  emoji-mart {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
 .error-message {
   color: var(--ion-color-danger);
   font-size: 0.8rem;

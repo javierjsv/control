@@ -29,6 +29,7 @@
     "@capacitor/haptics": "8.0.0",
     "@capacitor/keyboard": "8.0.0",
     "@capacitor/status-bar": "8.0.0",
+    "@ctrl/ngx-emoji-mart": "^9.3.0",
     "@fortawesome/fontawesome-free": "^7.1.0",
     "@ionic-native/in-app-browser": "^5.36.0",
     "@ionic/angular": "^8.0.0",
