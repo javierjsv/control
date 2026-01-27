@@ -66,11 +66,11 @@
 
       <!-- Precio -->
       <div class="product-pricing">
-        <div class="original-price" *ngIf="product.originalPrice">
-          ${{ product.originalPrice | number:'1.0-0' }}
+        <div class="original-price" *ngIf="product.priceBuy">
+          ${{ product.priceOffer | number:'1.0-0' }}
         </div>
         <div class="current-price">
-          ${{ product.price | number:'1.0-0' }}
+          ${{ product.priceSale | number:'1.0-0' }}
         </div>
       </div>
 

@@ -111,9 +111,8 @@ export class ProductosComponent implements OnInit, OnDestroy {
     this.productForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       category: ['', [Validators.required]],
-      price: [0, [Validators.required, Validators.min(0)]],
-      originalPrice: [0],
-      priceOffer: [0, [Validators.required, Validators.min(0)]],
+      priceBuy: [0],
+      priceOffer: [0, [Validators.min(0)]],
       image: ['', [Validators.required]],
       description: ['', [Validators.required, Validators.minLength(10)]],
       features: ['', [Validators.required]], // Se guardará como string y se convertirá a array
@@ -123,7 +122,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
       hotSale: [false],
       supplier: ['', [Validators.required]],
       quantity: [0, [Validators.required, Validators.min(0)]],
-      priceUnit: [0, [Validators.required, Validators.min(0)]]
+      priceSale: [0, [Validators.required, Validators.min(0)]]
     });
   }
 
@@ -243,8 +242,8 @@ export class ProductosComponent implements OnInit, OnDestroy {
         'N°': index + 1,
         'Nombre': product.name || '',
         'Categoría': product.category || '',
-        'Precio': product.price || 0,
-        'Precio Compra': product.originalPrice || '',
+        'Precio Compra': product.priceBuy || '',
+        'Precio Venta': product.priceSale || 0,
         'Precio Oferta': product.priceOffer || 0,
         'Descripción': product.description || '',
         'Características': product.features ? product.features.join(', ') : '',
@@ -265,8 +264,8 @@ export class ProductosComponent implements OnInit, OnDestroy {
         { wch: 5 },   // N°
         { wch: 30 },  // Nombre
         { wch: 20 },  // Categoría
-        { wch: 12 },  // Precio
         { wch: 15 },  // Precio Compra
+        { wch: 15 },  // Precio Venta
         { wch: 15 },  // Precio Oferta
         { wch: 50 },  // Descripción
         { wch: 40 },  // Características
@@ -370,8 +369,8 @@ export class ProductosComponent implements OnInit, OnDestroy {
   async processExcelData(data: any[]) {
     try {
       // Columnas requeridas
-      const requiredColumns = ['Nombre', 'Categoría', 'Precio', 'Descripción', 'URL Imagen', 'Características'];
-      const optionalColumns = ['Precio Compra', 'Precio Oferta', 'Rating', 'Reviews', 'En Stock', 'Hot Sale'];
+      const requiredColumns = ['Nombre', 'Categoría', 'Descripción', 'URL Imagen', 'Características'];
+      const optionalColumns = ['Precio Compra', 'Precio Venta', 'Precio Oferta', 'Rating', 'Reviews', 'En Stock', 'Hot Sale'];
       
       // Validar que existan las columnas requeridas
       const firstRow = data[0];
@@ -405,7 +404,6 @@ export class ProductosComponent implements OnInit, OnDestroy {
           // Validar datos requeridos
           const name = String(row['Nombre'] || '').trim();
           const category = String(row['Categoría'] || '').trim();
-          const priceStr = String(row['Precio'] || '').trim();
           const description = String(row['Descripción'] || '').trim();
           const image = String(row['URL Imagen'] || '').trim();
           const featuresStr = String(row['Características'] || '').trim();
@@ -418,17 +416,6 @@ export class ProductosComponent implements OnInit, OnDestroy {
 
           if (!category) {
             errors.push(`Fila ${rowNumber}: La categoría es requerida`);
-            continue;
-          }
-
-          if (!priceStr) {
-            errors.push(`Fila ${rowNumber}: El precio es requerido`);
-            continue;
-          }
-
-          const price = parseFloat(priceStr);
-          if (isNaN(price) || price < 0) {
-            errors.push(`Fila ${rowNumber}: El precio debe ser un número válido mayor o igual a 0`);
             continue;
           }
 
@@ -463,8 +450,8 @@ export class ProductosComponent implements OnInit, OnDestroy {
           }
 
           // Datos opcionales
-          const originalPriceStr = row['Precio Compra'] ? String(row['Precio Compra']).trim() : '';
-          const originalPrice = originalPriceStr ? (isNaN(parseFloat(originalPriceStr)) ? undefined : parseFloat(originalPriceStr)) : undefined;
+          const priceBuyStr = row['Precio Compra'] ? String(row['Precio Compra']).trim() : '';
+          const priceBuy = priceBuyStr ? (isNaN(parseFloat(priceBuyStr)) ? undefined : parseFloat(priceBuyStr)) : undefined;
 
           const ratingStr = row['Rating'] ? String(row['Rating']).trim() : '';
           const rating = ratingStr ? (isNaN(parseFloat(ratingStr)) ? 0 : Math.max(0, Math.min(5, parseFloat(ratingStr)))) : 0;
@@ -485,17 +472,13 @@ export class ProductosComponent implements OnInit, OnDestroy {
           const quantityStr = row['Cantidad'] ? String(row['Cantidad']).trim() : '0';
           const quantity = isNaN(parseInt(quantityStr)) ? 0 : parseInt(quantityStr);
           
-          const priceUnitStr = row['Precio Unitario'] ? String(row['Precio Unitario']).trim() : priceStr;
-          const priceUnit = isNaN(parseFloat(priceUnitStr)) ? price : parseFloat(priceUnitStr);
-
-          const priceOfferStr = row['Precio Oferta'] ? String(row['Precio Oferta']).trim() : priceStr;
-          const priceOffer = isNaN(parseFloat(priceOfferStr)) ? price : parseFloat(priceOfferStr);
+          const priceSaleStr = row['Precio Venta'] ? String(row['Precio Venta']).trim() : '0';
+          const priceSale = isNaN(parseFloat(priceSaleStr)) ? 0 : parseFloat(priceSaleStr);
 
           // Crear objeto producto
           const productData: Omit<Product, 'id'> = {
             name,
             category,
-            price,
             description,
             image,
             features,
@@ -504,12 +487,20 @@ export class ProductosComponent implements OnInit, OnDestroy {
             inStock,
             supplier,
             quantity,
-            priceUnit,
-            priceOffer
+            priceSale
           };
 
-          if (originalPrice !== undefined && originalPrice > 0) {
-            productData.originalPrice = originalPrice;
+          // Solo incluir priceOffer si tiene un valor válido
+          const priceOfferStr = row['Precio Oferta'] ? String(row['Precio Oferta']).trim() : '';
+          if (priceOfferStr && !isNaN(parseFloat(priceOfferStr))) {
+            const priceOffer = parseFloat(priceOfferStr);
+            if (priceOffer > 0) {
+              productData.priceOffer = priceOffer;
+            }
+          }
+
+          if (priceBuy !== undefined && priceBuy > 0) {
+            productData.priceBuy = priceBuy;
           }
 
           if (hotSale) {
@@ -626,8 +617,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
       this.productForm.patchValue({
         name: product.name,
         category: product.category,
-        price: product.price,
-        originalPrice: product.originalPrice || 0,
+        priceBuy: product.priceBuy || 0,
         priceOffer: product.priceOffer || 0,
         image: product.image,
         description: product.description,
@@ -638,7 +628,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
         hotSale: product.hotSale || false,
         supplier: product.supplier || '',
         quantity: product.quantity || 0,
-        priceUnit: product.priceUnit || 0
+        priceSale: product.priceSale || 0
       }, { emitEvent: false });
       
       // Marcar como pristine y untouched después de cargar los valores
@@ -653,12 +643,11 @@ export class ProductosComponent implements OnInit, OnDestroy {
       this.productForm.reset({
         name: '',
         category: '',
-        price: 0,
-        originalPrice: 0,
+        priceBuy: 0,
         priceOffer: 0,
         supplier: '',
         quantity: 0,
-        priceUnit: 0,
+        priceSale: 0,
         image: '',
         description: '',
         features: '',
@@ -710,7 +699,6 @@ export class ProductosComponent implements OnInit, OnDestroy {
       const productData: Omit<Product, 'id'> = {
         name: formValue.name,
         category: formValue.category,
-        price: formValue.price,
         image: formValue.image,
         description: formValue.description,
         features: featuresArray,
@@ -720,13 +708,18 @@ export class ProductosComponent implements OnInit, OnDestroy {
         hotSale: formValue.hotSale || false,
         supplier: formValue.supplier,
         quantity: formValue.quantity,
-        priceUnit: formValue.priceUnit,
-        priceOffer: formValue.priceOffer
+        priceSale: formValue.priceSale
       };
 
-      // Solo incluir originalPrice si tiene un valor mayor a 0
-      if (formValue.originalPrice && formValue.originalPrice > 0) {
-        productData.originalPrice = formValue.originalPrice;
+      // Solo incluir priceBuy si tiene un valor mayor a 0
+      if (formValue.priceBuy && formValue.priceBuy > 0) {
+        productData.priceBuy = formValue.priceBuy;
+      }
+
+      // Incluir priceOffer siempre que tenga un valor (incluso si es 0, para permitir actualizaciones)
+      // Si es undefined o null, no se incluye (mantiene el valor existente o lo deja opcional)
+      if (formValue.priceOffer !== undefined && formValue.priceOffer !== null) {
+        productData.priceOffer = formValue.priceOffer;
       }
 
       if (this.isEditing && this.editingProductId) {

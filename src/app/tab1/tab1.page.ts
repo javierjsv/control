@@ -213,7 +213,7 @@ export class Tab1Page implements OnInit {
     const productUrl = `${window.location.origin}/product/${product.id}`;
     const shareData = {
       title: product.name,
-      text: `${product.name} - ${product.description} - Precio: $${product.price}`,
+      text: `${product.name} - ${product.description} - Precio: $${product.priceSale}`,
       url: productUrl
     };
 

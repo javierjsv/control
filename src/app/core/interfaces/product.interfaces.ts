@@ -2,10 +2,9 @@ export interface Product {
   id?: string;
   name: string;
   category: string;
-  price: number;
-  originalPrice?: number;
-  priceUnit: number;
-  priceOffer: number;
+  priceBuy?: number;
+  priceSale: number;
+  priceOffer?: number;
   image: string;
   description: string;
   features: string[];
@@ -15,5 +14,4 @@ export interface Product {
   hotSale?: boolean;
   supplier: string;
   quantity: number;
-  
 }
