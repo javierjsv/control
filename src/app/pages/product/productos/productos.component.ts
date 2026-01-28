@@ -120,11 +120,44 @@ export class ProductosComponent implements OnInit, OnDestroy {
   constructor() {
     addIcons({ add, create, trash, close, checkmark, search, download, cloudUpload });
     
+    // Función helper para parsear números formateados (sin usar this)
+    const parseFormattedNumberHelper = (value: string | number | null | undefined): number => {
+      if (value === null || value === undefined || value === '') {
+        return 0;
+      }
+      if (typeof value === 'number') {
+        return Math.floor(value);
+      }
+      const cleanedValue = String(value).replace(/\./g, '').trim();
+      const numValue = parseFloat(cleanedValue);
+      return isNaN(numValue) ? 0 : Math.floor(numValue);
+    };
+
+    // Validador personalizado para campos de precio formateados
+    const priceValidator = (control: any) => {
+      if (!control.value || control.value === '') {
+        return null; // Permitir vacío para campos opcionales
+      }
+      const numValue = parseFormattedNumberHelper(control.value);
+      return numValue >= 0 ? null : { min: { min: 0, actual: numValue } };
+    };
+
+    const requiredPriceValidator = (control: any) => {
+      if (!control.value || control.value === '') {
+        return { required: true };
+      }
+      const numValue = parseFormattedNumberHelper(control.value);
+      if (numValue < 0) {
+        return { min: { min: 0, actual: numValue } };
+      }
+      return null;
+    };
+
     this.productForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       category: ['', [Validators.required]],
-      priceBuy: [0],
-      priceOffer: [0, [Validators.min(0)]],
+      priceBuy: ['', [priceValidator]],
+      priceOffer: ['', [priceValidator]],
       image: ['', [Validators.required]],
       description: ['', [Validators.required, Validators.minLength(10)]],
       features: ['', [Validators.required]], // Se guardará como string y se convertirá a array
@@ -134,7 +167,7 @@ export class ProductosComponent implements OnInit, OnDestroy {
       hotSale: [false],
       supplier: ['', [Validators.required]],
       quantity: [0, [Validators.required, Validators.min(0)]],
-      priceSale: [0, [Validators.required, Validators.min(0)]]
+      priceSale: ['', [requiredPriceValidator]]
     });
   }
 
@@ -679,11 +712,11 @@ export class ProductosComponent implements OnInit, OnDestroy {
       this.productForm.reset({
         name: '',
         category: '',
-        priceBuy: 0,
-        priceOffer: 0,
+        priceBuy: '',
+        priceOffer: '',
         supplier: '',
         quantity: 0,
-        priceSale: 0,
+        priceSale: '',
         image: '',
         description: '',
         features: '',
@@ -731,6 +764,11 @@ export class ProductosComponent implements OnInit, OnDestroy {
         .map((f: string) => f.trim())
         .filter((f: string) => f.length > 0);
 
+      // Convertir valores formateados a números enteros
+      const priceSale = this.parseFormattedNumber(formValue.priceSale);
+      const priceBuy = this.parseFormattedNumber(formValue.priceBuy);
+      const priceOffer = this.parseFormattedNumber(formValue.priceOffer);
+
       // Construir el objeto de producto, excluyendo campos undefined
       const productData: Omit<Product, 'id'> = {
         name: formValue.name,
@@ -744,18 +782,18 @@ export class ProductosComponent implements OnInit, OnDestroy {
         hotSale: formValue.hotSale || false,
         supplier: formValue.supplier,
         quantity: formValue.quantity,
-        priceSale: formValue.priceSale
+        priceSale: priceSale
       };
 
       // Solo incluir priceBuy si tiene un valor mayor a 0
-      if (formValue.priceBuy && formValue.priceBuy > 0) {
-        productData.priceBuy = formValue.priceBuy;
+      if (priceBuy > 0) {
+        productData.priceBuy = priceBuy;
       }
 
       // Incluir priceOffer siempre que tenga un valor (incluso si es 0, para permitir actualizaciones)
       // Si es undefined o null, no se incluye (mantiene el valor existente o lo deja opcional)
-      if (formValue.priceOffer !== undefined && formValue.priceOffer !== null) {
-        productData.priceOffer = formValue.priceOffer;
+      if (priceOffer !== undefined && priceOffer !== null && priceOffer >= 0) {
+        productData.priceOffer = priceOffer;
       }
 
       if (this.isEditing && this.editingProductId) {
@@ -826,5 +864,58 @@ export class ProductosComponent implements OnInit, OnDestroy {
       position: 'bottom'
     });
     await toast.present();
+  }
+
+  /**
+   * Formatea un número con separadores de miles (ej: 2500 -> "2.500")
+   */
+  formatNumberWithThousands(value: number | string | null | undefined): string {
+    if (value === null || value === undefined || value === '') {
+      return '';
+    }
+    // Convertir a número y eliminar decimales
+    const numValue = typeof value === 'string' ? parseFloat(value.replace(/\./g, '')) : value;
+    if (isNaN(numValue)) {
+      return '';
+    }
+    // Formatear con separadores de miles
+    return Math.floor(numValue).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
+  /**
+   * Convierte un string formateado con separadores de miles a número entero (ej: "2.500" -> 2500)
+   */
+  parseFormattedNumber(value: string | number | null | undefined): number {
+    if (value === null || value === undefined || value === '') {
+      return 0;
+    }
+    if (typeof value === 'number') {
+      return Math.floor(value);
+    }
+    // Eliminar puntos (separadores de miles) y convertir a número
+    const cleanedValue = String(value).replace(/\./g, '').trim();
+    const numValue = parseFloat(cleanedValue);
+    return isNaN(numValue) ? 0 : Math.floor(numValue);
+  }
+
+  /**
+   * Maneja el evento de input para formatear el número con separadores de miles
+   */
+  onPriceInput(event: any, fieldName: 'priceBuy' | 'priceSale' | 'priceOffer') {
+    const inputValue = event.detail.value || '';
+    // Eliminar todos los caracteres que no sean dígitos
+    const numericValue = inputValue.replace(/\D/g, '');
+    
+    if (numericValue === '') {
+      this.productForm.patchValue({ [fieldName]: '' }, { emitEvent: false });
+      return;
+    }
+
+    // Convertir a número y formatear
+    const numValue = parseInt(numericValue, 10);
+    const formattedValue = this.formatNumberWithThousands(numValue);
+    
+    // Actualizar el valor del formulario sin disparar eventos
+    this.productForm.patchValue({ [fieldName]: formattedValue }, { emitEvent: false });
   }
 }
