@@ -14,24 +14,38 @@
     </ion-card-header>
     <ion-card-content>
       <form [formGroup]="quickSaleForm" (ngSubmit)="onSubmit()">
-        <!-- Producto -->
-        <ion-item>
-          <ion-label position="stacked">Producto *</ion-label>
-          <ion-select formControlName="productId" placeholder="Selecciona un producto">
-            <ion-select-option
-              *ngFor="let product of products"
-              [value]="product.id">
-              {{ product.name }}
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
-        <p class="error-message" *ngIf="quickSaleForm.get('productId')?.invalid && quickSaleForm.get('productId')?.touched">
-          El producto es requerido
-        </p>
+        <!-- Producto con búsqueda tipo "mat-select-search" -->
+        <div class="product-search">
+          <ion-item>
+            <ion-label position="stacked">Producto *</ion-label>
+            <ion-input
+              type="text"
+              [value]="productSearchTerm || selectedProduct?.name || ''"
+              (ionInput)="onProductSearchChange($event)"
+              placeholder="Escribe para buscar un producto">
+            </ion-input>
+          </ion-item>
+
+          <div class="product-results" *ngIf="showProductResults">
+            <ion-item
+              button
+              *ngFor="let product of filteredProducts"
+              (click)="selectProduct(product)">
+              <ion-label>
+                <h3>{{ product.name }}</h3>
+                <p>Stock: {{ product.quantity || 0 }} · ${{ formatNumber(product.priceSale) }}</p>
+              </ion-label>
+            </ion-item>
+          </div>
+
+          <p class="error-message" *ngIf="quickSaleForm.get('productId')?.invalid && quickSaleForm.get('productId')?.touched">
+            El producto es requerido
+          </p>
+        </div>
 
         <!-- Cliente -->
         <ion-item>
-          <ion-label position="stacked">Cliente (opcional)</ion-label>
+          <ion-label position="stacked">Cliente registrado (opcional)</ion-label>
           <ion-select formControlName="customerId" placeholder="Selecciona un cliente">
             <ion-select-option
               *ngFor="let customer of customers"
@@ -39,6 +53,14 @@
               {{ customer.name }}
             </ion-select-option>
           </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Nombre cliente (manual, opcional)</ion-label>
+          <ion-input
+            formControlName="customerName"
+            placeholder="Escribe el nombre del cliente si no está registrado">
+          </ion-input>
         </ion-item>
 
         <!-- Cantidad -->

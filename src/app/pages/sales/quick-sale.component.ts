@@ -64,6 +64,9 @@ export class QuickSaleComponent implements OnInit {
   products: Product[] = [];
   customers: Customer[] = [];
   isLoading = false;
+  filteredProducts: Product[] = [];
+  productSearchTerm = '';
+  showProductResults = false;
 
   private productsService = inject(ProductsService);
   private customersService = inject(CustomersService);
@@ -78,6 +81,7 @@ export class QuickSaleComponent implements OnInit {
     this.quickSaleForm = this.fb.group({
       productId: ['', [Validators.required]],
       customerId: [''],
+      customerName: [''],
       quantity: [1, [Validators.required, Validators.min(1)]],
       paymentMethod: ['cash', [Validators.required]],
       discount: [0, [Validators.min(0)]],
@@ -117,7 +121,10 @@ export class QuickSaleComponent implements OnInit {
 
   loadProducts() {
     this.productsService.getAll().subscribe({
-      next: (products) => (this.products = products),
+      next: (products) => {
+        this.products = products;
+        this.filteredProducts = products;
+      },
       error: (err) => {
         console.error('Error al cargar productos para ventas rápidas:', err);
         this.showToast('Error al cargar productos', 'danger');
@@ -135,6 +142,29 @@ export class QuickSaleComponent implements OnInit {
     });
   }
 
+  onProductSearchChange(event: CustomEvent) {
+    const term = ((event.detail.value as string) || '').toLowerCase().trim();
+    this.productSearchTerm = term;
+
+    if (!term) {
+      this.filteredProducts = this.products;
+      this.showProductResults = false;
+      return;
+    }
+
+    this.filteredProducts = this.products.filter((p) =>
+      p.name.toLowerCase().includes(term)
+    );
+    this.showProductResults = this.filteredProducts.length > 0;
+  }
+
+  selectProduct(product: Product) {
+    this.quickSaleForm.patchValue({ productId: product.id });
+    this.productSearchTerm = product.name;
+    this.filteredProducts = this.products;
+    this.showProductResults = false;
+  }
+
   async onSubmit() {
     if (this.quickSaleForm.invalid || !this.selectedProduct) {
       this.quickSaleForm.markAllAsTouched();
@@ -145,6 +175,7 @@ export class QuickSaleComponent implements OnInit {
     const formValue = this.quickSaleForm.value;
     const product = this.selectedProduct;
     const customer = this.customers.find((c) => c.id === formValue.customerId);
+    const manualCustomerName: string = (formValue.customerName || '').trim();
     const quantity = formValue.quantity;
 
     if (product.quantity < quantity) {
@@ -159,9 +190,15 @@ export class QuickSaleComponent implements OnInit {
     this.loadingService.show('Registrando venta...');
 
     try {
+      // Resolver datos de cliente:
+      // - Si hay nombre escrito manualmente, se usa ese (sin customerId)
+      // - Si no, se usa el cliente seleccionado del listado (id + name)
+      const resolvedCustomerId = manualCustomerName ? undefined : customer?.id;
+      const resolvedCustomerName = manualCustomerName || customer?.name;
+
       await this.salesService.createSaleAndUpdateStock({
-        customerId: customer?.id,
-        customerName: customer?.name,
+        customerId: resolvedCustomerId,
+        customerName: resolvedCustomerName,
         items: [
           {
             productId: product.id!,
@@ -184,6 +221,7 @@ export class QuickSaleComponent implements OnInit {
       this.quickSaleForm.reset({
         productId: '',
         customerId: '',
+        customerName: '',
         quantity: 1,
         paymentMethod: formValue.paymentMethod,
         discount: 0,

@@ -49,6 +49,25 @@
             </ion-button>
           </ion-item>
         </div>
+
+        <div class="date-filters">
+          <ion-item class="date-item">
+            <ion-label position="stacked">Desde</ion-label>
+            <ion-input
+              type="date"
+              [value]="startDate"
+              (ionInput)="onStartDateChange($event)">
+            </ion-input>
+          </ion-item>
+          <ion-item class="date-item">
+            <ion-label position="stacked">Hasta</ion-label>
+            <ion-input
+              type="date"
+              [value]="endDate"
+              (ionInput)="onEndDateChange($event)">
+            </ion-input>
+          </ion-item>
+        </div>
       </div>
 
       <!-- Vista tabla escritorio -->

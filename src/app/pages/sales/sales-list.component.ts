@@ -49,6 +49,10 @@ export class SalesListComponent implements OnInit, OnDestroy {
   isLoading = false;
   searchTerm = '';
 
+  // Filtros de fecha (YYYY-MM-DD)
+  startDate: string | null = null;
+  endDate: string | null = null;
+
   pageSize = 10;
   pageIndex = 0;
   pageSizeOptions = [5, 10, 20, 50];
@@ -125,17 +129,86 @@ export class SalesListComponent implements OnInit, OnDestroy {
     this.applyFilter();
   }
 
+  async onStartDateChange(event: CustomEvent) {
+    this.startDate = (event.detail.value as string) || null;
+
+    if (this.startDate && this.endDate) {
+      const start = new Date(this.startDate);
+      const end = new Date(this.endDate);
+      if (start > end) {
+        await this.showToast('La fecha "Desde" no puede ser mayor que la fecha "Hasta"', 'warning');
+        this.startDate = null;
+        return;
+      }
+    }
+
+    this.applyFilter();
+  }
+
+  async onEndDateChange(event: CustomEvent) {
+    this.endDate = (event.detail.value as string) || null;
+
+    if (this.startDate && this.endDate) {
+      const start = new Date(this.startDate);
+      const end = new Date(this.endDate);
+      if (start > end) {
+        await this.showToast('La fecha "Hasta" no puede ser menor que la fecha "Desde"', 'warning');
+        this.endDate = null;
+        return;
+      }
+    }
+
+    this.applyFilter();
+  }
+
   applyFilter() {
-    if (!this.searchTerm || this.searchTerm.trim() === '') {
-      this.filteredSales = this.sales;
-    } else {
-      const searchLower = this.searchTerm.toLowerCase().trim();
-      this.filteredSales = this.sales.filter((sale) => {
+    const hasSearch = !!this.searchTerm && this.searchTerm.trim() !== '';
+    const searchLower = hasSearch ? this.searchTerm.toLowerCase().trim() : '';
+
+    // Preparar fechas de filtro
+    let start: Date | null = null;
+    let end: Date | null = null;
+
+    if (this.startDate) {
+      start = new Date(this.startDate);
+      start.setHours(0, 0, 0, 0);
+    }
+    if (this.endDate) {
+      end = new Date(this.endDate);
+      end.setHours(23, 59, 59, 999);
+    }
+
+    this.filteredSales = this.sales.filter((sale) => {
+      // Filtro por texto
+      let matchesSearch = true;
+      if (hasSearch) {
         const customerName = sale.customerName?.toLowerCase() || '';
         const itemsNames = sale.items.map((i) => i.productName.toLowerCase()).join(' ');
-        return customerName.includes(searchLower) || itemsNames.includes(searchLower);
-      });
-    }
+        matchesSearch = customerName.includes(searchLower) || itemsNames.includes(searchLower);
+      }
+
+      // Filtro por fecha
+      let matchesDate = true;
+      if (start || end) {
+        if (!sale.createdAt) {
+          matchesDate = false;
+        } else {
+          const saleDate = (sale.createdAt as any).toDate
+            ? (sale.createdAt as any).toDate() as Date
+            : new Date(sale.createdAt as any);
+
+          if (start && saleDate < start) {
+            matchesDate = false;
+          }
+          if (end && saleDate > end) {
+            matchesDate = false;
+          }
+        }
+      }
+
+      return matchesSearch && matchesDate;
+    });
+
     this.updatePaginatedSales();
   }
 
