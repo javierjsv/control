@@ -90,10 +90,18 @@ export class SalesService {
       const discount = sale.discount ?? 0;
       const total = sale.total ?? Math.max(subtotal - discount, 0);
 
-      // Verificar y actualizar stock de cada producto
-      for (const item of sale.items) {
-        const productRef = doc(this.firestore, 'products', item.productId);
-        const productSnap = await transaction.get(productRef);
+      // 1) LEER TODOS LOS PRODUCTOS (todas las lecturas antes de cualquier escritura)
+      const productRefs = sale.items.map((item) =>
+        doc(this.firestore, 'products', item.productId)
+      );
+
+      const productSnaps = await Promise.all(
+        productRefs.map((ref) => transaction.get(ref))
+      );
+
+      // 2) VALIDAR STOCK CON LAS LECTURAS YA HECHAS
+      productSnaps.forEach((productSnap, index) => {
+        const item = sale.items[index];
 
         if (!productSnap.exists()) {
           throw new Error(`Producto no encontrado: ${item.productName}`);
@@ -107,14 +115,23 @@ export class SalesService {
             `Stock insuficiente para el producto "${productData.name}". Disponible: ${currentQty}, solicitado: ${item.quantity}`,
           );
         }
+      });
 
-        transaction.update(productRef, {
+      // 3) APLICAR LAS ESCRITURAS (actualizar stock)
+      productSnaps.forEach((productSnap, index) => {
+        const item = sale.items[index];
+        const productData = productSnap.data() as Product;
+        const currentQty = productData.quantity ?? 0;
+
+        transaction.update(productRefs[index], {
           quantity: currentQty - item.quantity,
         });
-      }
+      });
 
-      // Crear la venta (eliminando campos undefined antes de enviar a Firestore)
+      // 4) CREAR LA VENTA (eliminando campos undefined antes de enviar a Firestore)
       const salesRef = collection(this.firestore, this.collectionName);
+      const saleDocRef = doc(salesRef);
+
       const rawSaleData: Omit<Sale, 'id'> = {
         ...sale,
         subtotal,
@@ -131,8 +148,8 @@ export class SalesService {
         }
       });
 
-      const docRef = await addDoc(salesRef, saleData);
-      return docRef.id;
+      transaction.set(saleDocRef, saleData);
+      return saleDocRef.id;
     });
 
     return saleId;

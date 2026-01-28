@@ -89,7 +89,15 @@
               <td>{{ (pageIndex * pageSize) + i + 1 }}</td>
               <td>{{ formatDate(sale.createdAt) }}</td>
               <td>{{ sale.customerName || '-' }}</td>
-              <td>{{ formatItemsSummary(sale) }}</td>
+              <td class="products-cell">
+                <div class="products-list">
+                  <div *ngFor="let item of sale.items" class="product-item">
+                    <span class="product-name">{{ item.productName }}</span>
+                    <span class="product-quantity">x{{ item.quantity }}</span>
+                    <span class="product-total">{{ formatCurrency(item.total) }}</span>
+                  </div>
+                </div>
+              </td>
               <td>{{ sale.paymentMethod | titlecase }}</td>
               <td>{{ formatCurrency(sale.total) }}</td>
               <td>
@@ -129,7 +137,15 @@
             <ion-card-content>
               <p><strong>Fecha:</strong> {{ formatDate(sale.createdAt) }}</p>
               <p><strong>Cliente:</strong> {{ sale.customerName || '-' }}</p>
-              <p><strong>Productos:</strong> {{ formatItemsSummary(sale) }}</p>
+              <div class="products-section">
+                <p><strong>Productos:</strong></p>
+                <div class="products-list-mobile">
+                  <div *ngFor="let item of sale.items" class="product-item-mobile">
+                    <span class="product-name">{{ item.productName }}</span>
+                    <span class="product-details">x{{ item.quantity }} - {{ formatCurrency(item.total) }}</span>
+                  </div>
+                </div>
+              </div>
               <p><strong>Método pago:</strong> {{ sale.paymentMethod | titlecase }}</p>
               <p>
                 <strong>Estado:</strong>

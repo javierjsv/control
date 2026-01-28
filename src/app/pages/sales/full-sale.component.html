@@ -1,0 +1,199 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Venta completa</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <div class="quick-sale-header">
+    <div class="title-row">
+      <div class="title-icon">🧾</div>
+      <div class="title-text">
+        <h1>Venta completa</h1>
+        <p>Agrega varios productos al carrito y cobra en un solo paso</p>
+      </div>
+    </div>
+  </div>
+
+  <ion-card class="quick-sale-card">
+    <ion-card-header>
+      <ion-card-title>Datos de la venta</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <form [formGroup]="saleForm" (ngSubmit)="onSubmit()">
+
+      <!-- Producto -->
+      <div class="section-header">
+        <span class="section-icon">🧸</span>
+        <span class="section-title">Productos</span>
+      </div>
+
+      <div class="product-search">
+        <ion-item>
+          <ion-label position="stacked">Buscar producto</ion-label>
+          <ion-input
+            type="text"
+            [value]="productSearchTerm"
+            (ionInput)="onProductSearchChange($event)"
+            placeholder="Escribe para buscar un producto y agrégalo">
+          </ion-input>
+        </ion-item>
+
+        <div class="product-results" *ngIf="showProductResults">
+          <ion-item
+            button
+            *ngFor="let product of filteredProducts"
+            (click)="addProductToCart(product)">
+            <ion-label>
+              <h3>{{ product.name }}</h3>
+              <p>Stock: {{ product.quantity || 0 }} · ${{ formatNumber(product.priceSale) }}</p>
+            </ion-label>
+          </ion-item>
+        </div>
+      </div>
+
+      <!-- Carrito -->
+      <ion-card *ngIf="cartItems.length > 0" class="cart-card">
+        <ion-card-content>
+          <ion-list>
+            <ion-item *ngFor="let item of cartItems">
+              <ion-label>
+                <h3>{{ item.product.name }}</h3>
+                <p>Precio: ${{ formatNumber(item.product.priceSale) }}</p>
+              </ion-label>
+              <div class="cart-quantity">
+                <ion-button
+                  fill="outline"
+                  size="small"
+                  (click)="decreaseItemQuantity(item)"
+                  [disabled]="item.quantity <= 1">
+                  -
+                </ion-button>
+                <div class="cart-quantity-value">
+                  {{ item.quantity }}
+                </div>
+                <ion-button
+                  fill="outline"
+                  size="small"
+                  (click)="increaseItemQuantity(item)">
+                  +
+                </ion-button>
+              </div>
+              <div class="cart-total">
+                ${{ formatNumber(item.product.priceSale * item.quantity) }}
+              </div>
+              <ion-button
+                fill="clear"
+                color="danger"
+                size="small"
+                (click)="removeItem(item)">
+                <ion-icon name="trash"></ion-icon>
+              </ion-button>
+            </ion-item>
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+
+      <p class="error-message" *ngIf="cartItems.length === 0">
+        Agrega al menos un producto al carrito para registrar la venta.
+      </p>
+
+      <!-- Cliente -->
+      <div class="section-header section-header-inline">
+        <span class="section-icon">👤</span>
+        <span class="section-title">Cliente</span>
+        <span class="section-subtitle">(opcional)</span>
+      </div>
+      <ion-item>
+        <ion-label position="stacked">Cliente registrado</ion-label>
+        <ion-select formControlName="customerId" placeholder="Selecciona un cliente">
+          <ion-select-option
+            *ngFor="let customer of customers"
+            [value]="customer.id">
+            {{ customer.name }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Nombre cliente (manual, opcional)</ion-label>
+        <ion-input
+          formControlName="customerName"
+          placeholder="Escribe el nombre del cliente si no está registrado">
+        </ion-input>
+      </ion-item>
+
+      <!-- Método de pago -->
+      <div class="section-header">
+        <span class="section-icon">💳</span>
+        <span class="section-title">Método de pago</span>
+      </div>
+      <div class="payment-methods">
+        <button
+          type="button"
+          [class.active]="saleForm.get('paymentMethod')?.value === 'cash'"
+          (click)="setPaymentMethod('cash')">
+          <span class="pm-icon">💵</span>
+          <span>Efectivo</span>
+        </button>
+        <button
+          type="button"
+          [class.active]="saleForm.get('paymentMethod')?.value === 'card'"
+          (click)="setPaymentMethod('card')">
+          <span class="pm-icon">💳</span>
+          <span>Tarjeta</span>
+        </button>
+        <button
+          type="button"
+          [class.active]="saleForm.get('paymentMethod')?.value === 'transfer'"
+          (click)="setPaymentMethod('transfer')">
+          <span class="pm-icon">🏦</span>
+          <span>Transferencia</span>
+        </button>
+      </div>
+
+      <!-- Descuento -->
+      <ion-item>
+        <ion-label position="stacked">Descuento (opcional)</ion-label>
+        <ion-input
+          type="number"
+          formControlName="discount"
+          min="0"
+          inputmode="numeric">
+        </ion-input>
+      </ion-item>
+
+      <!-- Resumen -->
+      <ion-card class="summary-card">
+        <ion-card-content>
+          <p><strong>Subtotal:</strong> ${{ formatNumber(subtotal) }}</p>
+          <p><strong>Descuento:</strong> ${{ formatNumber(discount) }}</p>
+          <p class="total-row">
+            <span><strong>Total a cobrar:</strong></span>
+            <span class="total-amount">${{ formatNumber(total) }}</span>
+          </p>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-button
+        type="submit"
+        class="charge-button"
+        expand="block"
+        [disabled]="cartItems.length === 0 || isLoading">
+        <ion-icon slot="start" name="cash"></ion-icon>
+        {{ isLoading ? 'Registrando...' : 'Cobrar ' + formatNumber(total) }}
+      </ion-button>
+
+      </form>
+    </ion-card-content>
+  </ion-card>
+
+  <div class="loading-overlay" *ngIf="isLoading">
+    <ion-spinner></ion-spinner>
+  </div>
+</ion-content>
+
