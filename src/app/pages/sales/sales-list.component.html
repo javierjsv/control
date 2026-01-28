@@ -1,0 +1,151 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Ventas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="arrow-down"
+      pullingText="Arrastra para actualizar"
+      refreshingSpinner="circles"
+      refreshingText="Actualizando...">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <div class="ion-padding">
+    <div *ngIf="isLoading" class="loading-container">
+      <ion-spinner></ion-spinner>
+      <p>Cargando ventas...</p>
+    </div>
+
+    <div *ngIf="!isLoading">
+      <div class="header-section">
+        <h2>Lista de Ventas ({{ sales.length }})</h2>
+      </div>
+
+      <div class="search-section">
+        <div class="search-container">
+          <ion-item class="search-item">
+            <ion-label position="stacked">Buscar por cliente o producto.</ion-label>
+            <ion-input
+              type="text"
+              [value]="searchTerm"
+              (ionInput)="onSearchChange($event)"
+              placeholder="Escribe el nombre del cliente o producto..."
+              clearOnEdit="false">
+            </ion-input>
+            <ion-button
+              *ngIf="searchTerm"
+              (click)="searchTerm=''; applyFilter()"
+              fill="clear"
+              size="small"
+              slot="end">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </div>
+      </div>
+
+      <!-- Vista tabla escritorio -->
+      <div class="table-view" *ngIf="filteredSales.length > 0">
+        <table class="sales-table">
+          <thead>
+            <tr>
+              <th>N°</th>
+              <th>Fecha</th>
+              <th>Cliente</th>
+              <th>Productos</th>
+              <th>Método pago</th>
+              <th>Total</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let sale of paginatedSales; let i = index">
+              <td>{{ (pageIndex * pageSize) + i + 1 }}</td>
+              <td>{{ formatDate(sale.createdAt) }}</td>
+              <td>{{ sale.customerName || '-' }}</td>
+              <td>{{ formatItemsSummary(sale) }}</td>
+              <td>{{ sale.paymentMethod | titlecase }}</td>
+              <td>{{ formatCurrency(sale.total) }}</td>
+              <td>
+                <span
+                  class="status-badge"
+                  [ngClass]="{
+                    'status-completed': sale.status === 'completed',
+                    'status-cancelled': sale.status === 'cancelled'
+                  }">
+                  {{ sale.status === 'completed' ? 'Completada' : 'Cancelada' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <mat-paginator
+          [length]="totalItems"
+          [pageSize]="pageSize"
+          [pageIndex]="pageIndex"
+          [pageSizeOptions]="pageSizeOptions"
+          [showFirstLastButtons]="true"
+          (page)="onPageChange($event)"
+          aria-label="Seleccionar página">
+        </mat-paginator>
+      </div>
+
+      <!-- Vista cards móvil -->
+      <div class="cards-view" *ngIf="filteredSales.length > 0">
+        <ion-list>
+          <ion-card *ngFor="let sale of filteredSales" class="sale-card">
+            <ion-card-header>
+              <ion-card-title>
+                {{ formatCurrency(sale.total) }}
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <p><strong>Fecha:</strong> {{ formatDate(sale.createdAt) }}</p>
+              <p><strong>Cliente:</strong> {{ sale.customerName || '-' }}</p>
+              <p><strong>Productos:</strong> {{ formatItemsSummary(sale) }}</p>
+              <p><strong>Método pago:</strong> {{ sale.paymentMethod | titlecase }}</p>
+              <p>
+                <strong>Estado:</strong>
+                <span
+                  class="status-badge"
+                  [ngClass]="{
+                    'status-completed': sale.status === 'completed',
+                    'status-cancelled': sale.status === 'cancelled'
+                  }">
+                  {{ sale.status === 'completed' ? 'Completada' : 'Cancelada' }}
+                </span>
+              </p>
+            </ion-card-content>
+          </ion-card>
+        </ion-list>
+      </div>
+
+      <ion-infinite-scroll
+        *ngIf="!searchTerm && hasMore && !isLoading"
+        (ionInfinite)="loadMoreSales($event)"
+        threshold="100px">
+        <ion-infinite-scroll-content
+          loadingSpinner="bubbles"
+          loadingText="Cargando más ventas...">
+        </ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+
+      <div *ngIf="sales.length === 0" class="empty-state">
+        <p>No hay ventas registradas todavía.</p>
+      </div>
+
+      <div *ngIf="sales.length > 0 && filteredSales.length === 0" class="empty-state">
+        <p>No se encontraron ventas que coincidan con "{{ searchTerm }}"</p>
+      </div>
+    </div>
+  </div>
+</ion-content>
+

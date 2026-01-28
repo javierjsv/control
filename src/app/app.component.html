@@ -23,6 +23,14 @@
           <ion-icon name="business" slot="start"></ion-icon>
           <ion-label>Proveedores</ion-label>
         </ion-item>
+        <ion-item *ngIf="isAuthenticated" button routerLink="/ventas" routerDirection="root">
+          <ion-icon name="cash" slot="start"></ion-icon>
+          <ion-label>Ventas</ion-label>
+        </ion-item>
+        <ion-item *ngIf="isAuthenticated" button routerLink="/ventas-rapidas" routerDirection="root">
+          <ion-icon name="cash" slot="start"></ion-icon>
+          <ion-label>Registrar venta rápida</ion-label>
+        </ion-item>
         <ion-item *ngIf="isAuthenticated" button routerLink="/customers" routerDirection="root">
           <ion-icon name="person" slot="start"></ion-icon>
           <ion-label>Clientes</ion-label>

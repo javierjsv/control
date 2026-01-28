@@ -1,0 +1,115 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Registrar venta rápida</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Datos de la venta</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <form [formGroup]="quickSaleForm" (ngSubmit)="onSubmit()">
+        <!-- Producto -->
+        <ion-item>
+          <ion-label position="stacked">Producto *</ion-label>
+          <ion-select formControlName="productId" placeholder="Selecciona un producto">
+            <ion-select-option
+              *ngFor="let product of products"
+              [value]="product.id">
+              {{ product.name }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+        <p class="error-message" *ngIf="quickSaleForm.get('productId')?.invalid && quickSaleForm.get('productId')?.touched">
+          El producto es requerido
+        </p>
+
+        <!-- Cliente -->
+        <ion-item>
+          <ion-label position="stacked">Cliente (opcional)</ion-label>
+          <ion-select formControlName="customerId" placeholder="Selecciona un cliente">
+            <ion-select-option
+              *ngFor="let customer of customers"
+              [value]="customer.id">
+              {{ customer.name }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <!-- Cantidad -->
+        <ion-item>
+          <ion-label position="stacked">Cantidad *</ion-label>
+          <ion-input
+            type="number"
+            formControlName="quantity"
+            min="1"
+            inputmode="numeric">
+          </ion-input>
+        </ion-item>
+        <p class="error-message" *ngIf="quickSaleForm.get('quantity')?.invalid && quickSaleForm.get('quantity')?.touched">
+          La cantidad debe ser mayor o igual a 1
+        </p>
+
+        <!-- Información de producto seleccionado -->
+        <ion-card *ngIf="selectedProduct" class="info-card">
+          <ion-card-content>
+            <p><strong>Precio unitario:</strong> ${{ formatNumber(unitPrice) }}</p>
+            <p><strong>Stock disponible:</strong> {{ availableStock }}</p>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Método de pago -->
+        <ion-item>
+          <ion-label position="stacked">Método de pago *</ion-label>
+          <ion-select formControlName="paymentMethod">
+            <ion-select-option value="cash">Efectivo</ion-select-option>
+            <ion-select-option value="card">Tarjeta</ion-select-option>
+            <ion-select-option value="transfer">Transferencia</ion-select-option>
+            <ion-select-option value="other">Otro</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <!-- Descuento -->
+        <ion-item>
+          <ion-label position="stacked">Descuento (opcional)</ion-label>
+          <ion-input
+            type="number"
+            formControlName="discount"
+            min="0"
+            inputmode="numeric">
+          </ion-input>
+        </ion-item>
+
+        <!-- Resumen de totales -->
+        <ion-card class="summary-card">
+          <ion-card-content>
+            <p><strong>Subtotal:</strong> ${{ formatNumber(subtotal) }}</p>
+            <p><strong>Descuento:</strong> ${{ formatNumber(discount) }}</p>
+            <p class="total-row">
+              <span><strong>Total a pagar:</strong></span>
+              <span class="total-amount">${{ formatNumber(total) }}</span>
+            </p>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-button
+          type="submit"
+          expand="block"
+          [disabled]="quickSaleForm.invalid || !selectedProduct || isLoading">
+          <ion-icon slot="start" name="cash"></ion-icon>
+          {{ isLoading ? 'Registrando...' : 'Registrar venta' }}
+        </ion-button>
+      </form>
+    </ion-card-content>
+  </ion-card>
+
+  <div class="loading-overlay" *ngIf="isLoading">
+    <ion-spinner></ion-spinner>
+  </div>
+</ion-content>
+
