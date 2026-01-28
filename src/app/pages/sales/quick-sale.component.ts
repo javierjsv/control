@@ -239,6 +239,21 @@ export class QuickSaleComponent implements OnInit {
     return new Intl.NumberFormat('es-CO').format(value || 0);
   }
 
+  increaseQuantity() {
+    const current = this.quickSaleForm.get('quantity')?.value || 1;
+    this.quickSaleForm.patchValue({ quantity: current + 1 });
+  }
+
+  decreaseQuantity() {
+    const current = this.quickSaleForm.get('quantity')?.value || 1;
+    const next = Math.max(1, current - 1);
+    this.quickSaleForm.patchValue({ quantity: next });
+  }
+
+  setPaymentMethod(method: 'cash' | 'card' | 'transfer' | 'other') {
+    this.quickSaleForm.patchValue({ paymentMethod: method });
+  }
+
   private async showToast(
     message: string,
     color: 'success' | 'danger' | 'warning' = 'success'

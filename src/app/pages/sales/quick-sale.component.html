@@ -8,16 +8,33 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ion-card>
+
+  <div class="quick-sale-header">
+    <div class="title-row">
+      <div class="title-icon">🛒</div>
+      <div class="title-text">
+        <h1>Venta rápida</h1>
+        <p>Registra una venta en segundos</p>
+      </div>
+    </div>
+  </div>
+
+  <ion-card class="quick-sale-card">
     <ion-card-header>
       <ion-card-title>Datos de la venta</ion-card-title>
     </ion-card-header>
     <ion-card-content>
       <form [formGroup]="quickSaleForm" (ngSubmit)="onSubmit()">
+        <!-- Sección: Producto -->
+        <div class="section-header">
+          <span class="section-icon">🧸</span>
+          <span class="section-title">Producto</span>
+        </div>
+
         <!-- Producto con búsqueda tipo "mat-select-search" -->
         <div class="product-search">
           <ion-item>
-            <ion-label position="stacked">Producto *</ion-label>
+            <ion-label position="stacked">Buscar producto *</ion-label>
             <ion-input
               type="text"
               [value]="productSearchTerm || selectedProduct?.name || ''"
@@ -44,8 +61,13 @@
         </div>
 
         <!-- Cliente -->
+        <div class="section-header section-header-inline">
+          <span class="section-icon">👤</span>
+          <span class="section-title">Cliente</span>
+          <span class="section-subtitle">(opcional)</span>
+        </div>
         <ion-item>
-          <ion-label position="stacked">Cliente registrado (opcional)</ion-label>
+          <ion-label position="stacked">Cliente registrado</ion-label>
           <ion-select formControlName="customerId" placeholder="Selecciona un cliente">
             <ion-select-option
               *ngFor="let customer of customers"
@@ -64,15 +86,28 @@
         </ion-item>
 
         <!-- Cantidad -->
-        <ion-item>
-          <ion-label position="stacked">Cantidad *</ion-label>
-          <ion-input
-            type="number"
-            formControlName="quantity"
-            min="1"
-            inputmode="numeric">
-          </ion-input>
-        </ion-item>
+        <div class="section-header">
+          <span class="section-icon">📦</span>
+          <span class="section-title">Cantidad</span>
+        </div>
+        <div class="quantity-row">
+          <ion-button
+            fill="outline"
+            size="small"
+            (click)="decreaseQuantity()"
+            [disabled]="(quickSaleForm.get('quantity')?.value || 1) <= 1">
+            -
+          </ion-button>
+          <div class="quantity-value">
+            {{ quickSaleForm.get('quantity')?.value || 1 }}
+          </div>
+          <ion-button
+            fill="outline"
+            size="small"
+            (click)="increaseQuantity()">
+            +
+          </ion-button>
+        </div>
         <p class="error-message" *ngIf="quickSaleForm.get('quantity')?.invalid && quickSaleForm.get('quantity')?.touched">
           La cantidad debe ser mayor o igual a 1
         </p>
@@ -86,15 +121,33 @@
         </ion-card>
 
         <!-- Método de pago -->
-        <ion-item>
-          <ion-label position="stacked">Método de pago *</ion-label>
-          <ion-select formControlName="paymentMethod">
-            <ion-select-option value="cash">Efectivo</ion-select-option>
-            <ion-select-option value="card">Tarjeta</ion-select-option>
-            <ion-select-option value="transfer">Transferencia</ion-select-option>
-            <ion-select-option value="other">Otro</ion-select-option>
-          </ion-select>
-        </ion-item>
+        <div class="section-header">
+          <span class="section-icon">💳</span>
+          <span class="section-title">Método de pago</span>
+        </div>
+        <div class="payment-methods">
+          <button
+            type="button"
+            [class.active]="quickSaleForm.get('paymentMethod')?.value === 'cash'"
+            (click)="setPaymentMethod('cash')">
+            <span class="pm-icon">💵</span>
+            <span>Efectivo</span>
+          </button>
+          <button
+            type="button"
+            [class.active]="quickSaleForm.get('paymentMethod')?.value === 'card'"
+            (click)="setPaymentMethod('card')">
+            <span class="pm-icon">💳</span>
+            <span>Tarjeta</span>
+          </button>
+          <button
+            type="button"
+            [class.active]="quickSaleForm.get('paymentMethod')?.value === 'transfer'"
+            (click)="setPaymentMethod('transfer')">
+            <span class="pm-icon">🏦</span>
+            <span>Transferencia</span>
+          </button>
+        </div>
 
         <!-- Descuento -->
         <ion-item>
@@ -121,6 +174,7 @@
 
         <ion-button
           type="submit"
+          class="charge-button"
           expand="block"
           [disabled]="quickSaleForm.invalid || !selectedProduct || isLoading">
           <ion-icon slot="start" name="cash"></ion-icon>
