@@ -1,0 +1,295 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Clientes</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        (click)="triggerFileInput()"
+        color="tertiary"
+        fill="solid"
+        class="import-button">
+        <ion-icon slot="start" name="cloud-upload" class="icon-visible"></ion-icon>
+        <span class="button-text">Subir</span>
+      </ion-button>
+      <ion-button
+        (click)="exportToExcel()"
+        color="success"
+        fill="solid"
+        [disabled]="customers.length === 0"
+        class="export-button">
+        <ion-icon slot="start" name="download" class="icon-visible"></ion-icon>
+        <span class="button-text">Descargar</span>
+      </ion-button>
+      <ion-button
+        (click)="openModal()"
+        color="primary"
+        fill="solid"
+        class="create-button">
+        <ion-icon slot="start" name="add" class="icon-visible"></ion-icon>
+        <span class="button-text">Nuevo</span>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="arrow-down"
+      pullingText="Arrastra para actualizar"
+      refreshingSpinner="circles"
+      refreshingText="Actualizando...">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <div class="ion-padding">
+    <div *ngIf="isLoading" class="loading-container">
+      <ion-spinner></ion-spinner>
+      <p>Cargando clientes...</p>
+    </div>
+
+    <div *ngIf="!isLoading">
+      <div class="header-section">
+        <h2>Lista de Clientes ({{ customers.length }})</h2>
+      </div>
+
+      <div class="search-section">
+        <div class="search-container">
+          <ion-item class="search-item">
+            <ion-label position="stacked">Buscar por nombre.</ion-label>
+            <ion-input
+              type="text"
+              [value]="searchTerm"
+              (ionInput)="onSearchChange($event)"
+              placeholder="Escribe el nombre del cliente..."
+              clearOnEdit="false">
+            </ion-input>
+            <ion-button
+              *ngIf="searchTerm"
+              (click)="clearSearch()"
+              fill="clear"
+              size="small"
+              slot="end">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </div>
+      </div>
+
+      <div class="table-view" *ngIf="filteredCustomers.length > 0">
+        <table class="products-table">
+          <thead>
+            <tr>
+              <th>N°</th>
+              <th>Nombre</th>
+              <th>Ciudad</th>
+              <th>Teléfono</th>
+              <th>Email</th>
+              <th>Dirección</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let customer of paginatedCustomers; let i = index">
+              <td>{{ (pageIndex * pageSize) + i + 1 }}</td>
+              <td>
+                <div class="product-name-cell">
+                  <span>{{ customer.name }}</span>
+                </div>
+              </td>
+              <td>{{ customer.city }}</td>
+              <td>
+                <a
+                  [href]="getPhoneLink(customer.phone)"
+                  (click)="callPhone(customer.phone, $event)"
+                  class="phone-link"
+                  [attr.aria-label]="'Llamar a ' + customer.phone">
+                  {{ customer.phone }}
+                </a>
+              </td>
+              <td>
+                <span *ngIf="customer.email">{{ customer.email }}</span>
+                <span *ngIf="!customer.email" class="text-muted">-</span>
+              </td>
+              <td>
+                <span *ngIf="customer.address">{{ customer.address }}</span>
+                <span *ngIf="!customer.address" class="text-muted">-</span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <ion-button (click)="openModal(customer)" color="warning" fill="clear" size="small">
+                    <ion-icon slot="icon-only" name="create"></ion-icon>
+                  </ion-button>
+                  <ion-button (click)="deleteCustomer(customer)" color="danger" fill="clear" size="small">
+                    <ion-icon slot="icon-only" name="trash"></ion-icon>
+                  </ion-button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <mat-paginator
+          [length]="totalItems"
+          [pageSize]="pageSize"
+          [pageIndex]="pageIndex"
+          [pageSizeOptions]="pageSizeOptions"
+          [showFirstLastButtons]="true"
+          (page)="onPageChange($event)"
+          aria-label="Seleccionar página">
+        </mat-paginator>
+      </div>
+
+      <div class="cards-view" *ngIf="filteredCustomers.length > 0">
+        <ion-list>
+          <ion-card *ngFor="let customer of filteredCustomers" class="product-card">
+            <div class="product-card-content">
+              <div class="product-info">
+                <ion-card-header>
+                  <ion-card-title>{{ customer.name }}</ion-card-title>
+                </ion-card-header>
+                <ion-card-content>
+                  <p><strong>Ciudad:</strong> {{ customer.city }}</p>
+                  <p>
+                    <strong>Teléfono:</strong>
+                    <a
+                      [href]="getPhoneLink(customer.phone)"
+                      (click)="callPhone(customer.phone, $event)"
+                      class="phone-link"
+                      [attr.aria-label]="'Llamar a ' + customer.phone">
+                      {{ customer.phone }}
+                    </a>
+                  </p>
+                  <p *ngIf="customer.email"><strong>Email:</strong> {{ customer.email }}</p>
+                  <p *ngIf="customer.address"><strong>Dirección:</strong> {{ customer.address }}</p>
+                  <p *ngIf="customer.description"><strong>Descripción:</strong> {{ customer.description }}</p>
+                </ion-card-content>
+              </div>
+              <div class="product-actions">
+                <ion-button (click)="openModal(customer)" color="warning" fill="outline">
+                  <ion-icon slot="icon-only" name="create"></ion-icon>
+                </ion-button>
+                <ion-button (click)="deleteCustomer(customer)" color="danger" fill="outline">
+                  <ion-icon slot="icon-only" name="trash"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
+          </ion-card>
+        </ion-list>
+      </div>
+
+      <ion-infinite-scroll
+        *ngIf="!searchTerm && hasMore && !isLoading"
+        (ionInfinite)="loadMoreCustomers($event)"
+        threshold="100px">
+        <ion-infinite-scroll-content
+          loadingSpinner="bubbles"
+          loadingText="Cargando más clientes...">
+        </ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+
+      <div *ngIf="customers.length === 0" class="empty-state">
+        <p>No hay clientes registrados. Crea uno nuevo haciendo clic en el botón +</p>
+      </div>
+
+      <div *ngIf="customers.length > 0 && filteredCustomers.length === 0" class="empty-state">
+        <p>No se encontraron clientes que coincidan con "{{ searchTerm }}"</p>
+        <ion-button (click)="clearSearch()" fill="outline" class="ion-margin-top">
+          Limpiar búsqueda
+        </ion-button>
+      </div>
+    </div>
+  </div>
+
+  <ion-modal [isOpen]="isModalOpen" (didDismiss)="closeModal()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>
+            {{ isEditing ? 'Editar Cliente' : 'Nuevo Cliente' }}
+          </ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="closeModal()">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="ion-padding">
+        <form [formGroup]="customerForm" (ngSubmit)="saveCustomer()">
+          <ion-item>
+            <ion-label position="stacked">Nombre *</ion-label>
+            <ion-input formControlName="name"></ion-input>
+          </ion-item>
+          <p class="error-message" *ngIf="customerForm.get('name')?.invalid && formSubmitted">
+            El nombre es requerido y debe tener al menos 3 caracteres
+          </p>
+
+          <ion-item>
+            <ion-label position="stacked">Ciudad *</ion-label>
+            <ion-input formControlName="city"></ion-input>
+          </ion-item>
+          <p class="error-message" *ngIf="customerForm.get('city')?.invalid && formSubmitted">
+            La ciudad es requerida
+          </p>
+
+          <ion-item>
+            <ion-label position="stacked">Teléfono *</ion-label>
+            <ion-input
+              type="tel"
+              formControlName="phone"
+              (ionInput)="onPhoneInput($event)"
+              inputmode="numeric"
+              pattern="[0-9]*">
+            </ion-input>
+          </ion-item>
+          <p class="error-message" *ngIf="customerForm.get('phone')?.invalid && formSubmitted">
+            <span *ngIf="customerForm.get('phone')?.errors?.['required']">El teléfono es requerido</span>
+            <span *ngIf="customerForm.get('phone')?.errors?.['pattern']">
+              El teléfono solo debe contener números y guiones (-)
+            </span>
+          </p>
+
+          <ion-item>
+            <ion-label position="stacked">Email (opcional)</ion-label>
+            <ion-input type="email" formControlName="email"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Dirección (opcional)</ion-label>
+            <ion-textarea rows="3" formControlName="address"></ion-textarea>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Descripción (opcional)</ion-label>
+            <ion-textarea
+              rows="4"
+              formControlName="description"
+              placeholder="Descripción adicional del cliente">
+            </ion-textarea>
+          </ion-item>
+
+          <ion-button
+            expand="block"
+            type="submit"
+            class="ion-margin-top"
+            [disabled]="customerForm.invalid">
+            <ion-icon slot="start" name="checkmark"></ion-icon>
+            {{ isEditing ? 'Actualizar' : 'Crear' }} Cliente
+          </ion-button>
+        </form>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <input
+    type="file"
+    id="customers-excel-file-input"
+    accept=".xlsx,.xls"
+    style="display: none;"
+    (change)="onFileSelected($event)">
+</ion-content>
+

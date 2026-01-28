@@ -23,6 +23,10 @@
           <ion-icon name="business" slot="start"></ion-icon>
           <ion-label>Proveedores</ion-label>
         </ion-item>
+        <ion-item *ngIf="isAuthenticated" button routerLink="/customers" routerDirection="root">
+          <ion-icon name="person" slot="start"></ion-icon>
+          <ion-label>Clientes</ion-label>
+        </ion-item>
         <ion-item *ngIf="isAuthenticated" button routerLink="/categories" routerDirection="root">
           <ion-icon name="pricetags" slot="start"></ion-icon>
           <ion-label>Categorías</ion-label>
