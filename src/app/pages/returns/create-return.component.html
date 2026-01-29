@@ -1,0 +1,282 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Devoluciones y Cancelaciones</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="ion-padding">
+    <!-- Búsqueda de venta -->
+    <div *ngIf="!selectedSale">
+      <div class="header-section">
+        <h2>Crear Devolución</h2>
+      </div>
+
+      <div class="search-section">
+        <div class="search-container">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="search"></ion-icon>
+                Buscar venta
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-item class="search-item">
+                <ion-label position="stacked">ID de venta</ion-label>
+                <ion-input
+                  [(ngModel)]="searchSaleId"
+                  placeholder="Ingrese el ID de la venta"
+                  (keyup.enter)="searchSale()"></ion-input>
+                <ion-button slot="end" (click)="searchSale()" [disabled]="isLoadingSales">
+                  <ion-icon name="search" slot="icon-only"></ion-icon>
+                </ion-button>
+              </ion-item>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </div>
+
+      <!-- Lista de ventas recientes -->
+      <ion-card *ngIf="!selectedSale && !isLoadingSales">
+        <ion-card-header>
+          <ion-card-title>Ventas recientes</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list>
+            <ion-item
+              *ngFor="let sale of sales"
+              button
+              (click)="selectSale(sale)"
+              [disabled]="sale.status === 'cancelled'">
+              <ion-label>
+                <h2>Venta #{{ sale.id?.substring(0, 8) }}</h2>
+                <p>{{ formatDate(sale.createdAt) }}</p>
+                <p>{{ formatCurrency(sale.total) }} - {{ sale.items.length }} producto(s)</p>
+              </ion-label>
+              <ion-icon
+                *ngIf="sale.status === 'cancelled'"
+                name="close"
+                color="danger"
+                slot="end"></ion-icon>
+            </ion-item>
+          </ion-list>
+          <p *ngIf="sales.length === 0" class="empty-message">
+            No hay ventas recientes disponibles
+          </p>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Spinner de carga -->
+      <div *ngIf="isLoadingSales" class="loading-container">
+        <ion-spinner></ion-spinner>
+        <p>Cargando ventas...</p>
+      </div>
+    </div>
+
+    <!-- Formulario de devolución -->
+    <div *ngIf="selectedSale">
+    <!-- Información de la venta -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="cash"></ion-icon>
+          Venta seleccionada
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="sale-info">
+          <p><strong>ID:</strong> {{ selectedSale.id }}</p>
+          <p><strong>Fecha:</strong> {{ formatDate(selectedSale.createdAt) }}</p>
+          <p><strong>Cliente:</strong> {{ selectedSale.customerName || 'No especificado' }}</p>
+          <p><strong>Total:</strong> {{ formatCurrency(selectedSale.total) }}</p>
+          <p><strong>Productos:</strong> {{ selectedSale.items.length }}</p>
+        </div>
+        <ion-button expand="block" fill="clear" (click)="clearSelection()" class="ion-margin-top">
+          <ion-icon name="close" slot="start"></ion-icon>
+          Cambiar venta
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Tipo de devolución -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Tipo de devolución</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label>Cancelar venta completa</ion-label>
+          <ion-select
+            [(ngModel)]="returnType"
+            (ionChange)="onReturnTypeChange()"
+            interface="action-sheet">
+            <ion-select-option value="full">Devolución completa</ion-select-option>
+            <ion-select-option value="partial">Devolución parcial</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Ítems de la venta -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Productos de la venta</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="items-list">
+          <div
+            *ngFor="let item of selectedSale.items; let i = index"
+            class="sale-item">
+            <div class="item-info">
+              <h3>{{ item.productName }}</h3>
+              <p>
+                Precio unitario: {{ formatCurrency(item.priceUnit) }} | Cantidad vendida:
+                {{ item.quantity }}
+              </p>
+              <p>Total: {{ formatCurrency(item.total) }}</p>
+            </div>
+            <div *ngIf="returnType === 'partial'" class="return-controls">
+              <ion-item>
+                <ion-label position="stacked">Cantidad a devolver</ion-label>
+                <ion-input
+                  type="number"
+                  [value]="returnItems[i]?.quantity || 0"
+                  [min]="0"
+                  [max]="item.quantity"
+                  (ionInput)="updateReturnItemQuantity(i, $any($event.target).value)"
+                  placeholder="0"></ion-input>
+              </ion-item>
+              <p class="return-total" *ngIf="returnItems[i] && returnItems[i].quantity > 0">
+                A reembolsar: {{ formatCurrency(returnItems[i]?.total || 0) }}
+              </p>
+            </div>
+            <div *ngIf="returnType === 'full'" class="full-return-badge">
+              <ion-icon name="checkmark" color="success"></ion-icon>
+              <span>Se devolverá completamente</span>
+            </div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Razón y notas -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Información de la devolución</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label position="stacked">Razón de la devolución</ion-label>
+          <ion-select [(ngModel)]="returnReason" interface="action-sheet">
+            <ion-select-option
+              *ngFor="let reason of returnReasons"
+              [value]="reason.value">
+              {{ reason.label }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Notas adicionales (opcional)</ion-label>
+          <ion-textarea
+            [(ngModel)]="returnNotes"
+            rows="3"
+            placeholder="Agregar notas sobre la devolución..."></ion-textarea>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Resumen -->
+    <ion-card *ngIf="canProcessReturn()" class="summary-card">
+      <ion-card-header>
+        <ion-card-title>Resumen de la devolución</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="summary-item">
+          <span class="summary-label">Tipo:</span>
+          <span class="summary-value">
+            {{ returnType === 'full' ? 'Devolución completa' : 'Devolución parcial' }}
+          </span>
+        </div>
+        <div class="summary-item" *ngIf="returnType === 'partial'">
+          <span class="summary-label">Productos a devolver:</span>
+          <span class="summary-value">{{ getSelectedItemsCount() }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Total a reembolsar:</span>
+          <span class="summary-value total-refund">
+            {{ formatCurrency(getTotalRefund()) }}
+          </span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Botón procesar -->
+    <ion-button
+      expand="block"
+      size="large"
+      (click)="processReturn()"
+      [disabled]="!canProcessReturn() || isLoadingReturn"
+      class="ion-margin-top">
+      <ion-icon name="arrow-undo" slot="start"></ion-icon>
+      {{ returnType === 'full' ? 'Cancelar venta completa' : 'Procesar devolución parcial' }}
+    </ion-button>
+  </div>
+
+  <!-- Modal de confirmación -->
+  <ion-modal [isOpen]="showConfirmModal" (willDismiss)="cancelReturn()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Confirmar devolución</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="cancelReturn()">
+              <ion-icon name="close" slot="icon-only"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="alertCircle" color="warning"></ion-icon>
+              ¿Está seguro?
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <p>
+              Está a punto de procesar una
+              <strong>{{ returnType === 'full' ? 'devolución completa' : 'devolución parcial' }}</strong>
+              de la venta.
+            </p>
+            <div class="confirm-summary">
+              <p><strong>Total a reembolsar:</strong> {{ formatCurrency(getTotalRefund()) }}</p>
+              <p><strong>Razón:</strong> {{ getReturnReasonLabel() }}</p>
+            </div>
+            <p class="warning-text">
+              <ion-icon name="alertCircle"></ion-icon>
+              El stock de los productos será repuesto automáticamente.
+            </p>
+            <div class="confirm-actions">
+              <ion-button expand="block" fill="outline" (click)="cancelReturn()">
+                Cancelar
+              </ion-button>
+              <ion-button
+                expand="block"
+                (click)="confirmReturn()"
+                [disabled]="isLoadingReturn">
+                <ion-spinner *ngIf="isLoadingReturn" name="crescent"></ion-spinner>
+                <span *ngIf="!isLoadingReturn">Confirmar devolución</span>
+              </ion-button>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+  </div>
+</ion-content>

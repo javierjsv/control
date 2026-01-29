@@ -1,0 +1,162 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Historial de Devoluciones</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="arrow-down"
+      pullingText="Arrastra para actualizar"
+      refreshingSpinner="circles"
+      refreshingText="Actualizando...">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <div class="ion-padding">
+    <!-- Loading Spinner -->
+    <div *ngIf="isLoading && returns.length === 0" class="loading-container">
+      <ion-spinner></ion-spinner>
+      <p>Cargando devoluciones...</p>
+    </div>
+
+    <!-- Lista de devoluciones -->
+    <div *ngIf="!isLoading || returns.length > 0">
+      <div class="header-section">
+        <h2>Historial de Devoluciones ({{ returns.length }})</h2>
+      </div>
+
+      <!-- Vista de Tabla para pantallas grandes (mayor a tablet) -->
+      <div class="table-view" *ngIf="returns.length > 0">
+        <table class="returns-table">
+          <thead>
+            <tr>
+              <th>N°</th>
+              <th>ID Devolución</th>
+              <th>Tipo</th>
+              <th>ID Venta</th>
+              <th>Cliente</th>
+              <th>Productos</th>
+              <th>Total Reembolsado</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let returnItem of returns; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>
+                <div class="product-name-cell">
+                  <span>{{ returnItem.id?.substring(0, 8) }}</span>
+                </div>
+              </td>
+              <td>
+                <ion-chip
+                  [color]="returnItem.returnType === 'full' ? 'danger' : 'warning'"
+                  size="small">
+                  {{ returnItem.returnType === 'full' ? 'Completa' : 'Parcial' }}
+                </ion-chip>
+              </td>
+              <td>{{ returnItem.saleId.substring(0, 8) }}</td>
+              <td>
+                <span *ngIf="returnItem.customerName">{{ returnItem.customerName }}</span>
+                <span *ngIf="!returnItem.customerName" class="text-muted">-</span>
+              </td>
+              <td>{{ returnItem.items.length }} producto(s)</td>
+              <td>{{ formatCurrency(returnItem.totalRefund) }}</td>
+              <td>{{ formatDate(returnItem.createdAt) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Vista de Tarjetas para móviles y tablets -->
+      <div class="cards-view" *ngIf="returns.length > 0">
+        <ion-card *ngFor="let returnItem of returns" class="return-card">
+      <ion-card-header>
+        <div class="card-header-content">
+          <div>
+            <ion-card-title>
+              <ion-icon name="arrow-undo"></ion-icon>
+              Devolución #{{ returnItem.id?.substring(0, 8) }}
+            </ion-card-title>
+            <ion-chip
+              [color]="returnItem.returnType === 'full' ? 'danger' : 'warning'"
+              class="return-type-chip">
+              {{ returnItem.returnType === 'full' ? 'Completa' : 'Parcial' }}
+            </ion-chip>
+          </div>
+          <div class="return-date">
+            <ion-icon name="time"></ion-icon>
+            {{ formatDate(returnItem.createdAt) }}
+          </div>
+        </div>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Información de la venta -->
+        <div class="sale-info-section">
+          <h3>
+            <ion-icon name="documentText"></ion-icon>
+            Venta relacionada
+          </h3>
+          <p><strong>ID:</strong> {{ returnItem.saleId }}</p>
+          <p *ngIf="getSale(returnItem.saleId)">
+            <strong>Fecha de venta:</strong>
+            {{ formatDate(getSale(returnItem.saleId)?.createdAt) }}
+          </p>
+          <p *ngIf="returnItem.customerName">
+            <ion-icon name="person"></ion-icon>
+            <strong>Cliente:</strong> {{ returnItem.customerName }}
+          </p>
+        </div>
+
+        <!-- Productos devueltos -->
+        <div class="items-section">
+          <h3>Productos devueltos</h3>
+          <div class="items-list">
+            <div *ngFor="let item of returnItem.items" class="return-item">
+              <div class="item-details">
+                <p class="item-name">{{ item.productName }}</p>
+                <p class="item-quantity">
+                  Cantidad: {{ item.quantity }} × {{ formatCurrency(item.priceUnit) }} =
+                  {{ formatCurrency(item.total) }}
+                </p>
+                <ion-chip *ngIf="item.reason" color="medium" size="small">
+                  {{ getReturnReasonLabel(item.reason) }}
+                </ion-chip>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resumen -->
+        <div class="summary-section">
+          <div class="summary-row">
+            <span class="summary-label">Total reembolsado:</span>
+            <span class="summary-value">{{ formatCurrency(returnItem.totalRefund) }}</span>
+          </div>
+          <div class="summary-row" *ngIf="returnItem.reason">
+            <span class="summary-label">Razón:</span>
+            <span class="summary-value">{{ getReturnReasonLabel(returnItem.reason) }}</span>
+          </div>
+          <div class="summary-row" *ngIf="returnItem.notes">
+            <span class="summary-label">Notas:</span>
+            <span class="summary-value notes-text">{{ returnItem.notes }}</span>
+          </div>
+        </div>
+      </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- Mensaje cuando no hay devoluciones -->
+      <div *ngIf="returns.length === 0 && !isLoading" class="empty-state">
+        <ion-icon name="arrow-undo" size="large"></ion-icon>
+        <h2>No hay devoluciones registradas</h2>
+        <p>Las devoluciones y cancelaciones aparecerán aquí</p>
+      </div>
+    </div>
+  </div>
+</ion-content>
