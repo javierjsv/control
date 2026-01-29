@@ -21,8 +21,6 @@ import {
   IonSelect,
   IonSelectOption,
   IonTextarea,
-  IonList,
-  IonCheckbox,
   IonModal,
   ToastController,
 } from '@ionic/angular/standalone';
@@ -69,8 +67,6 @@ import { LoadingService } from '../../core/services/loading.service';
     IonSelect,
     IonSelectOption,
     IonTextarea,
-    IonList,
-    IonCheckbox,
     IonModal,
   ],
 })
