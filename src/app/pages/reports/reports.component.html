@@ -1,0 +1,231 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Reportes y análisis</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Filtros -->
+  <ion-card class="filters-card no-print">
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="calendar"></ion-icon>
+        Período del reporte
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item>
+        <ion-label position="stacked">Período</ion-label>
+        <ion-select
+          [(ngModel)]="selectedPeriod"
+          (ionChange)="applyPeriodAndLoad()"
+          interface="action-sheet"
+          placeholder="Seleccionar">
+          <ion-select-option value="day">Hoy</ion-select-option>
+          <ion-select-option value="week">Última semana</ion-select-option>
+          <ion-select-option value="month">Último mes</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label>Usar rango personalizado</ion-label>
+        <ion-toggle [(ngModel)]="useCustomRange" (ionChange)="applyPeriodAndLoad()" slot="end"></ion-toggle>
+      </ion-item>
+      <ng-container *ngIf="useCustomRange">
+        <ion-item>
+          <ion-label position="stacked">Desde</ion-label>
+          <ion-input type="date" [(ngModel)]="customStartDate"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Hasta</ion-label>
+          <ion-input type="date" [(ngModel)]="customEndDate"></ion-input>
+        </ion-item>
+        <ion-button expand="block" (click)="loadReport()" class="ion-margin-top">
+          Generar reporte
+        </ion-button>
+      </ng-container>
+    </ion-card-content>
+  </ion-card>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner></ion-spinner>
+    <p>Generando reporte...</p>
+  </div>
+
+  <div *ngIf="!isLoading && report" class="report-container">
+    <!-- Título para impresión -->
+    <div class="print-title">
+      <h1>Reporte de Ventas y Análisis</h1>
+      <p class="print-period">
+        Período: {{ formatDateInput(report.filters.startDate) }} - {{ formatDateInput(report.filters.endDate) }}
+      </p>
+      <p class="print-date">Generado el: {{ formatDateInput(currentDate) }}</p>
+    </div>
+
+    <!-- Botones exportar -->
+    <div class="export-actions">
+      <ion-button (click)="exportToExcel()" fill="solid">
+        <ion-icon slot="start" name="download"></ion-icon>
+        Exportar Excel
+      </ion-button>
+      <ion-button (click)="printReport()" fill="outline">
+        <ion-icon slot="start" name="print"></ion-icon>
+        Imprimir / PDF
+      </ion-button>
+    </div>
+
+    <!-- Resumen -->
+    <ion-card class="summary-card">
+      <ion-card-header>
+        <ion-card-title>Resumen</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span class="summary-label">Total ventas</span>
+            <span class="summary-value">{{ formatCurrency(report.summary.totalSales) }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Cantidad de ventas</span>
+            <span class="summary-value">{{ report.summary.totalSalesCount }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Ticket promedio</span>
+            <span class="summary-value">{{ formatCurrency(report.summary.averageTicket) }}</span>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Ingresos vs Gastos -->
+    <ion-card *ngIf="report.incomeVsExpenses" class="income-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="cash"></ion-icon>
+          Ingresos vs gastos
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="income-grid">
+          <div class="income-item income">
+            <span class="income-label">Ingresos</span>
+            <span class="income-value">{{ formatCurrency(report.incomeVsExpenses.income) }}</span>
+          </div>
+          <div class="income-item expenses">
+            <span class="income-label">Gastos</span>
+            <span class="income-value">{{ formatCurrency(report.incomeVsExpenses.expenses) }}</span>
+          </div>
+          <div class="income-item profit">
+            <span class="income-label">Utilidad</span>
+            <span class="income-value">{{ formatCurrency(report.incomeVsExpenses.profit) }}</span>
+          </div>
+          <div class="income-item margin">
+            <span class="income-label">Margen</span>
+            <span class="income-value">{{ report.incomeVsExpenses.profitMargin.toFixed(1) }}%</span>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Ventas por período -->
+    <ion-card class="period-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="calendar"></ion-icon>
+          Ventas por período
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="period-table-wrapper">
+          <table class="period-table">
+            <thead>
+              <tr>
+                <th>Fecha / Etiqueta</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of report.salesByPeriod">
+                <td>{{ item.label }}</td>
+                <td>{{ item.count }}</td>
+                <td>{{ formatCurrency(item.total) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Top productos -->
+    <ion-card class="top-products-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="trending-up"></ion-icon>
+          Productos más vendidos
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="top-table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Producto</th>
+                <th>Unidades</th>
+                <th>Ingresos</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of report.topProducts; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ p.productName }}</td>
+                <td>{{ p.totalSold }}</td>
+                <td>{{ formatCurrency(p.totalRevenue) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p *ngIf="report.topProducts.length === 0" class="empty-message">No hay ventas en el período.</p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Clientes frecuentes -->
+    <ion-card class="customers-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="people"></ion-icon>
+          Clientes frecuentes
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="top-table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Cliente</th>
+                <th>Compras</th>
+                <th>Total gastado</th>
+                <th>Última compra</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of report.frequentCustomers; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ c.customerName }}</td>
+                <td>{{ c.totalPurchases }}</td>
+                <td>{{ formatCurrency(c.totalSpent) }}</td>
+                <td>{{ c.lastPurchaseDate || '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p *ngIf="report.frequentCustomers.length === 0" class="empty-message">No hay clientes con compras en el período.</p>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+</ion-content>

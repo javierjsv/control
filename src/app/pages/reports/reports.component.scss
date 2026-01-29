@@ -1,0 +1,391 @@
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: var(--ion-color-medium);
+
+  ion-spinner {
+    margin-bottom: 1rem;
+  }
+}
+
+.filters-card {
+  margin-bottom: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--ion-color-dark);
+
+    ion-icon {
+      font-size: 1.25rem;
+      color: var(--ion-color-primary);
+    }
+  }
+}
+
+.export-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.report-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.summary-card,
+.income-card,
+.period-card,
+.top-products-card,
+.customers-card {
+  margin: 0;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--ion-color-dark);
+
+    ion-icon {
+      font-size: 1.25rem;
+      color: var(--ion-color-primary);
+    }
+  }
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+
+  .summary-label {
+    font-size: 0.85rem;
+    color: var(--ion-color-medium);
+    font-weight: 500;
+  }
+
+  .summary-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--ion-color-primary);
+  }
+}
+
+.income-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.income-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem;
+  border-radius: 12px;
+
+  .income-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    opacity: 0.9;
+  }
+
+  .income-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  &.income {
+    background: rgba(76, 175, 80, 0.15);
+    color: #2e7d32;
+  }
+
+  &.expenses {
+    background: rgba(244, 67, 54, 0.15);
+    color: #c62828;
+  }
+
+  &.profit {
+    background: rgba(33, 150, 243, 0.15);
+    color: #1565c0;
+  }
+
+  &.margin {
+    background: rgba(156, 39, 176, 0.15);
+    color: #6a1b9a;
+  }
+}
+
+.period-table-wrapper,
+.top-table-wrapper {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.period-table,
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+
+  thead {
+    background: var(--ion-color-primary);
+    color: white;
+
+    th {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      font-weight: 600;
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid #eee;
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+    td {
+      padding: 0.75rem 1rem;
+      color: var(--ion-color-dark);
+    }
+  }
+}
+
+.empty-message {
+  text-align: center;
+  color: var(--ion-color-medium);
+  padding: 1rem;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.print-title {
+  display: none;
+}
+
+@media print {
+  .print-title {
+    display: block !important;
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #333;
+
+    h1 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #000;
+    }
+
+    .print-period {
+      margin: 0.5rem 0;
+      font-size: 1.1rem;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .print-date {
+      margin: 0.5rem 0 0 0;
+      font-size: 0.9rem;
+      color: #666;
+    }
+  }
+
+  @page {
+    margin: 1.5cm;
+    size: A4;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  ion-header,
+  .filters-card,
+  .export-actions {
+    display: none !important;
+  }
+
+  ion-content {
+    --padding-start: 0 !important;
+    --padding-end: 0 !important;
+    --padding-top: 0 !important;
+    --padding-bottom: 0 !important;
+    overflow: visible !important;
+    height: auto !important;
+    position: static !important;
+  }
+
+  .report-container {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    page-break-inside: avoid;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  ion-card {
+    break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+    margin: 1rem 0 !important;
+    page-break-inside: avoid;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  ion-card-header,
+  ion-card-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  ion-card-title {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    font-size: 1.2rem !important;
+    margin-bottom: 0.5rem !important;
+    color: #000 !important;
+    font-weight: bold !important;
+  }
+
+  ion-icon {
+    display: inline-block !important;
+    visibility: visible !important;
+  }
+
+  span {
+    display: inline !important;
+    visibility: visible !important;
+    color: #000 !important;
+  }
+
+  p {
+    display: block !important;
+    visibility: visible !important;
+    color: #000 !important;
+  }
+
+  .summary-grid,
+  .income-grid {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+    gap: 1rem !important;
+  }
+
+  .summary-item,
+  .income-item {
+    display: flex !important;
+    flex-direction: column !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    padding: 1rem !important;
+    border: 1px solid #ddd !important;
+  }
+
+  .period-table-wrapper,
+  .top-table-wrapper {
+    overflow: visible !important;
+    display: block !important;
+    visibility: visible !important;
+    page-break-inside: avoid;
+  }
+
+  .period-table,
+  .data-table {
+    display: table !important;
+    visibility: visible !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: avoid;
+  }
+
+  .period-table thead,
+  .data-table thead {
+    display: table-header-group !important;
+    visibility: visible !important;
+    background: #3880ff !important;
+    color: white !important;
+  }
+
+  .period-table tbody,
+  .data-table tbody {
+    display: table-row-group !important;
+    visibility: visible !important;
+  }
+
+  .period-table tr,
+  .data-table tr {
+    display: table-row !important;
+    visibility: visible !important;
+    page-break-inside: avoid;
+  }
+
+  .period-table th,
+  .period-table td,
+  .data-table th,
+  .data-table td {
+    display: table-cell !important;
+    visibility: visible !important;
+    padding: 0.5rem !important;
+    border: 1px solid #ddd !important;
+  }
+
+  .empty-message {
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  // Ocultar elementos de Ionic que no se necesitan en impresión
+  ion-menu-button,
+  ion-buttons {
+    display: none !important;
+  }
+}
