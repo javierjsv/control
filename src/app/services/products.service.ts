@@ -147,4 +147,30 @@ export class ProductsService {
       )
     );
   }
+
+  /**
+   * Obtiene productos con stock bajo (menor o igual a 10 unidades)
+   * @param threshold Umbral de stock bajo (por defecto 10)
+   * @returns Promise con array de productos con stock bajo
+   */
+  async getLowStockProducts(threshold: number = 10): Promise<{ id: string; name: string; quantity: number; category: string }[]> {
+    const productsRef = collection(this.firestore, this.collectionName);
+    const snapshot = await getDocs(productsRef);
+    
+    const lowStockProducts = snapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Product))
+      .filter(product => (product.quantity ?? 0) <= threshold)
+      .map(product => ({
+        id: product.id || '',
+        name: product.name,
+        quantity: product.quantity ?? 0,
+        category: product.category,
+      }))
+      .sort((a, b) => a.quantity - b.quantity); // Ordenar por cantidad (menor primero)
+
+    return lowStockProducts;
+  }
 }

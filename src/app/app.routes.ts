@@ -7,6 +7,11 @@ export const routes: Routes = [
     loadChildren: () => import('./tabs/tabs.routes').then((m) => m.routes),
   },
   {
+    path: 'dashboard',
+    loadComponent: () => import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent),
+    canActivate: [authGuard],
+  },
+  {
     path: 'perfil',
     loadComponent: () => import('./pages/perfil/perfil.component').then((m) => m.PerfilComponent),
     canActivate: [authGuard],

@@ -1,0 +1,376 @@
+// Dashboard styles
+.dashboard-section {
+  margin-bottom: 2rem;
+}
+
+.dashboard-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ion-color-primary);
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--ion-color-primary);
+}
+
+.dashboard-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: var(--ion-color-medium);
+
+  ion-spinner {
+    margin-bottom: 1rem;
+  }
+}
+
+.dashboard-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+// Cards de estadísticas principales
+.stats-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.stat-card {
+  margin: 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  ion-card-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+
+  .stat-icon {
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .stat-info {
+    flex: 1;
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--ion-color-medium);
+      margin: 0 0 0.5rem 0;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--ion-color-dark);
+      margin: 0 0 0.25rem 0;
+      line-height: 1.2;
+    }
+
+    .stat-subtitle {
+      font-size: 0.85rem;
+      color: var(--ion-color-medium);
+      margin: 0;
+    }
+  }
+
+  &.sales-card {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+
+    .stat-icon {
+      filter: brightness(0) invert(1);
+    }
+
+    .stat-info {
+      .stat-label,
+      .stat-value,
+      .stat-subtitle {
+        color: white;
+      }
+    }
+  }
+
+  &.average-card {
+    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+    color: white;
+
+    .stat-icon {
+      filter: brightness(0) invert(1);
+    }
+
+    .stat-info {
+      .stat-label,
+      .stat-value,
+      .stat-subtitle {
+        color: white;
+      }
+    }
+  }
+}
+
+// Gráfico de ventas
+.chart-card {
+  margin: 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  ion-card-header {
+    padding-bottom: 0.5rem;
+
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--ion-color-primary);
+
+      ion-icon {
+        font-size: 1.25rem;
+      }
+    }
+  }
+
+  ion-card-content {
+    padding-top: 0;
+  }
+}
+
+.chart-container {
+  padding: 1rem 0;
+}
+
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  gap: 0.5rem;
+  height: 200px;
+  padding: 0 0.5rem;
+}
+
+.chart-bar-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  gap: 0.5rem;
+}
+
+.chart-bar {
+  width: 100%;
+  background: linear-gradient(180deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
+  border-radius: 8px 8px 0 0;
+  min-height: 20px;
+  position: relative;
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+    transform: scaleY(1.05);
+  }
+
+  .bar-value {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--ion-color-dark);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  &:hover .bar-value {
+    opacity: 1;
+  }
+}
+
+.bar-label {
+  font-size: 0.75rem;
+  color: var(--ion-color-medium);
+  text-align: center;
+  white-space: nowrap;
+  transform: rotate(-45deg);
+  transform-origin: center;
+  margin-top: 0.5rem;
+}
+
+// Grid de dashboard
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+// Top productos
+.top-products-card,
+.low-stock-card {
+  margin: 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  ion-card-header {
+    padding-bottom: 0.5rem;
+
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--ion-color-primary);
+
+      ion-icon {
+        font-size: 1.25rem;
+      }
+    }
+  }
+}
+
+.top-products-list,
+.low-stock-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.top-product-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #f8f8f8;
+  border-radius: 8px;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #f0f0f0;
+  }
+
+  .product-rank {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--ion-color-primary);
+    min-width: 30px;
+  }
+
+  .product-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    .product-name-small {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+    }
+
+    .product-sold {
+      font-size: 0.8rem;
+      color: var(--ion-color-medium);
+    }
+  }
+
+  .product-revenue {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--ion-color-primary);
+    white-space: nowrap;
+  }
+}
+
+.low-stock-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  border-radius: 8px;
+
+  .stock-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    .product-name-small {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+    }
+
+    .stock-quantity {
+      font-size: 0.85rem;
+      color: #856404;
+      font-weight: 500;
+    }
+  }
+}
+
+.empty-state-small {
+  text-align: center;
+  padding: 1.5rem;
+  color: var(--ion-color-medium);
+  font-size: 0.9rem;
+}
+
+// Accesos rápidos
+.quick-actions-card {
+  margin: 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  ion-card-header {
+    padding-bottom: 0.5rem;
+
+    ion-card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--ion-color-primary);
+    }
+  }
+}
+
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.action-button {
+  --border-radius: 8px;
+  --padding-top: 0.75rem;
+  --padding-bottom: 0.75rem;
+  font-weight: 500;
+}

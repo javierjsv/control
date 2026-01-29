@@ -20,6 +20,7 @@ import {
 import { Observable } from 'rxjs';
 import { Sale } from '../core/interfaces/sale.interfaces';
 import { Product } from '../core/interfaces/product.interfaces';
+import { DashboardStats } from '../core/interfaces/dashboard.interfaces';
 
 @Injectable({
   providedIn: 'root',
@@ -171,6 +172,125 @@ export class SalesService {
   async deleteSale(id: string): Promise<void> {
     const saleRef = doc(this.firestore, this.collectionName, id);
     await deleteDoc(saleRef);
+  }
+
+  /**
+   * Obtiene estadísticas del dashboard
+   */
+  async getDashboardStats(): Promise<DashboardStats> {
+    const salesRef = collection(this.firestore, this.collectionName);
+    
+    // Obtener todas las ventas completadas (últimos 30 días para optimizar)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+    // Obtener todas las ventas de los últimos 30 días
+    const q = query(
+      salesRef,
+      orderBy('createdAt', 'desc')
+    );
+    const snapshot = await getDocs(q);
+    const allSales = snapshot.docs.map((d) => ({
+      id: d.id,
+      ...d.data(),
+    })) as Sale[];
+
+    // Filtrar ventas completadas
+    const completedSales = allSales.filter((s) => s.status === 'completed');
+
+    // Ventas del día
+    const todaySales = completedSales.filter((sale) => {
+      if (!sale.createdAt) return false;
+      const saleDate = (sale.createdAt as any).toDate
+        ? (sale.createdAt as any).toDate() as Date
+        : new Date(sale.createdAt as any);
+      return saleDate >= startOfToday && saleDate <= endOfToday;
+    });
+
+    const todayTotal = todaySales.reduce((sum, s) => sum + (s.total || 0), 0);
+    const todayCount = todaySales.length;
+    const todayAverage = todayCount > 0 ? todayTotal / todayCount : 0;
+
+    // Ventas últimos 7 días (para gráfico)
+    const last7DaysSales: { date: string; total: number; count: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      date.setHours(0, 0, 0, 0);
+      const nextDate = new Date(date);
+      nextDate.setDate(nextDate.getDate() + 1);
+
+      const daySales = completedSales.filter((sale) => {
+        if (!sale.createdAt) return false;
+        const saleDate = (sale.createdAt as any).toDate
+          ? (sale.createdAt as any).toDate() as Date
+          : new Date(sale.createdAt as any);
+        return saleDate >= date && saleDate < nextDate;
+      });
+
+      last7DaysSales.push({
+        date: date.toLocaleDateString('es-CO', { weekday: 'short', day: 'numeric', month: 'short' }),
+        total: daySales.reduce((sum, s) => sum + (s.total || 0), 0),
+        count: daySales.length,
+      });
+    }
+
+    // Top productos más vendidos (últimos 30 días)
+    const productMap = new Map<string, { name: string; totalSold: number; totalRevenue: number }>();
+    completedSales.forEach((sale) => {
+      sale.items.forEach((item) => {
+        const existing = productMap.get(item.productId) || {
+          name: item.productName,
+          totalSold: 0,
+          totalRevenue: 0,
+        };
+        existing.totalSold += item.quantity;
+        existing.totalRevenue += item.total;
+        productMap.set(item.productId, existing);
+      });
+    });
+
+    const topProducts = Array.from(productMap.entries())
+      .map(([productId, data]) => ({
+        productId,
+        productName: data.name,
+        totalSold: data.totalSold,
+        totalRevenue: data.totalRevenue,
+      }))
+      .sort((a, b) => b.totalSold - a.totalSold)
+      .slice(0, 5);
+
+    // Métodos de pago del día
+    const paymentMethodsMap = new Map<string, { total: number; count: number }>();
+    todaySales.forEach((sale) => {
+      const method = sale.paymentMethod || 'other';
+      const existing = paymentMethodsMap.get(method) || { total: 0, count: 0 };
+      existing.total += sale.total || 0;
+      existing.count += 1;
+      paymentMethodsMap.set(method, existing);
+    });
+
+    const paymentMethods = Array.from(paymentMethodsMap.entries()).map(([method, data]) => ({
+      method: method as 'cash' | 'card' | 'transfer' | 'other',
+      total: data.total,
+      count: data.count,
+    }));
+
+    return {
+      todaySales: {
+        total: todayTotal,
+        count: todayCount,
+        average: todayAverage,
+      },
+      last7DaysSales,
+      topProducts,
+      lowStockProducts: [], // Se llenará desde ProductsService
+      paymentMethods,
+    };
   }
 }
 
