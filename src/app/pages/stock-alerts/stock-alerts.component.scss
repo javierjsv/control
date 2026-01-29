@@ -1,0 +1,363 @@
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: var(--ion-color-medium);
+
+  ion-spinner {
+    margin-bottom: 1rem;
+  }
+}
+
+.content-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.config-card,
+.summary-card,
+.products-card {
+  margin: 0;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  ion-card-header {
+    padding-bottom: 0.5rem;
+
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+
+      ion-icon {
+        font-size: 1.5rem;
+        color: var(--ion-color-primary);
+      }
+    }
+  }
+}
+
+// Mejoras para el item de umbral por defecto
+.threshold-item {
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-end: 0;
+  --min-height: auto;
+  align-items: flex-start;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+
+  .threshold-label-item {
+    flex: 1;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+
+    .label-title {
+      display: block;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+      margin-bottom: 0.25rem;
+      line-height: 1.3;
+    }
+
+    .label-subtitle {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--ion-color-medium);
+      line-height: 1.4;
+    }
+  }
+
+  .threshold-input-wrapper {
+    flex-shrink: 0;
+    margin-left: 1rem;
+    min-width: 100px;
+    max-width: 120px;
+
+    .threshold-input-field {
+      --padding-start: 0.75rem;
+      --padding-end: 0.75rem;
+      --padding-top: 0.5rem;
+      --padding-bottom: 0.5rem;
+      --background: white;
+      --border-radius: 8px;
+      --border-width: 1px;
+      --border-color: #e0e0e0;
+      --border-style: solid;
+      font-size: 1rem;
+      font-weight: 600;
+      text-align: center;
+      color: var(--ion-color-primary);
+      min-height: 44px;
+
+      &:focus {
+        --border-color: var(--ion-color-primary);
+        --border-width: 2px;
+      }
+    }
+  }
+}
+
+@media (min-width: 768px) {
+  .threshold-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    .threshold-label-item {
+      flex: 1;
+      max-width: 60%;
+    }
+
+    .threshold-input-wrapper {
+      margin-left: 1.5rem;
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  .threshold-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+
+    .threshold-label-item {
+      width: 100%;
+    }
+
+    .threshold-input-wrapper {
+      margin-left: 0;
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+}
+
+.save-button {
+  margin-top: 1rem;
+  --border-radius: 12px;
+  font-weight: 600;
+}
+
+// Mejoras para los items de toggle
+ion-list {
+  background: transparent;
+  padding: 0;
+
+  ion-item {
+    --padding-start: 1rem;
+    --padding-end: 1rem;
+    --inner-padding-end: 0;
+    --min-height: 60px;
+    margin-bottom: 0.5rem;
+    border-radius: 12px;
+    background: #f8f9fa;
+
+    ion-label {
+      h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--ion-color-dark);
+        margin: 0 0 0.25rem 0;
+        line-height: 1.3;
+      }
+
+      p {
+        font-size: 0.85rem;
+        color: var(--ion-color-medium);
+        margin: 0;
+        line-height: 1.4;
+      }
+    }
+
+    ion-toggle {
+      --handle-width: 24px;
+      --handle-height: 24px;
+      --handle-max-height: 24px;
+      --handle-spacing: 2px;
+      --track-width: 48px;
+      --track-height: 28px;
+    }
+  }
+}
+
+.alerts-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.alert-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: #fff8e1;
+  border-left: 4px solid #ff9800;
+  border-radius: 8px;
+
+  .alert-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    .product-name {
+      font-weight: 600;
+      color: var(--ion-color-dark);
+      font-size: 0.95rem;
+    }
+
+    .stock-info {
+      font-size: 0.85rem;
+      color: var(--ion-color-medium);
+
+      strong {
+        color: var(--ion-color-dark);
+        font-weight: 600;
+
+        &.critical {
+          color: #f44336;
+        }
+      }
+    }
+  }
+}
+
+.search-item {
+  margin-bottom: 1rem;
+  --background: #f5f5f5;
+  --border-radius: 8px;
+  --padding-start: 1rem;
+  --padding-end: 1rem;
+}
+
+.product-item {
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-end: 0;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  background: #f8f8f8;
+}
+
+.product-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem;
+}
+
+.product-thumbnail {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.product-info {
+  flex: 1;
+  min-width: 0;
+
+  h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ion-color-dark);
+  }
+
+  .product-meta {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.85rem;
+    color: var(--ion-color-medium);
+
+    strong {
+      color: var(--ion-color-dark);
+      font-weight: 600;
+
+      &.low-stock {
+        color: #ff9800;
+      }
+    }
+  }
+}
+
+.threshold-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.threshold-label {
+  font-size: 0.85rem;
+  color: var(--ion-color-medium);
+  font-weight: 500;
+}
+
+.threshold-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.threshold-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ion-color-primary);
+  padding: 0.25rem 0.75rem;
+  background: rgba(var(--ion-color-primary-rgb), 0.1);
+  border-radius: 6px;
+}
+
+.threshold-edit {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.threshold-input {
+  flex: 1;
+  max-width: 100px;
+  --padding-start: 0.5rem;
+  --padding-end: 0.5rem;
+  --background: white;
+  --border-radius: 6px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--ion-color-medium);
+}
+
+@media (max-width: 768px) {
+  .product-content {
+    flex-direction: column;
+  }
+
+  .threshold-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .threshold-edit {
+    width: 100%;
+  }
+}

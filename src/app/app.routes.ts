@@ -52,6 +52,11 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'stock-alerts',
+    loadComponent: () => import('./pages/stock-alerts/stock-alerts.component').then((m) => m.StockAlertsComponent),
+    canActivate: [authGuard],
+  },
+  {
     path: 'login',
     loadComponent: () => import('./pages/login/login.component').then((m) => m.LoginComponent),
   },

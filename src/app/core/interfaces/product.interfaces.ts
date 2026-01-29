@@ -14,4 +14,5 @@ export interface Product {
   hotSale?: boolean;
   supplier: string;
   quantity: number;
+  minStock?: number; // Umbral mínimo de stock para alertas (opcional, si no existe usa el global)
 }

@@ -149,7 +149,7 @@ export class ProductsService {
   }
 
   /**
-   * Obtiene productos con stock bajo (menor o igual a 10 unidades)
+   * Obtiene productos con stock bajo (menor o igual al threshold)
    * @param threshold Umbral de stock bajo (por defecto 10)
    * @returns Promise con array de productos con stock bajo
    */
@@ -162,7 +162,11 @@ export class ProductsService {
         id: doc.id,
         ...doc.data()
       } as Product))
-      .filter(product => (product.quantity ?? 0) <= threshold)
+      .filter(product => {
+        // Usar minStock del producto si existe, sino usar el threshold global
+        const productThreshold = product.minStock ?? threshold;
+        return (product.quantity ?? 0) <= productThreshold;
+      })
       .map(product => ({
         id: product.id || '',
         name: product.name,

@@ -1,0 +1,177 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Alertas de Stock</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner></ion-spinner>
+    <p>Cargando configuración...</p>
+  </div>
+
+  <div *ngIf="!isLoading && config" class="content-container">
+    <!-- Configuración Global -->
+    <ion-card class="config-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="settings"></ion-icon>
+          Configuración Global
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item class="threshold-item">
+            <ion-label position="stacked" class="threshold-label-item">
+              <span class="label-title">Umbral por defecto</span>
+              <span class="label-subtitle">Stock mínimo para alertar (unidades)</span>
+            </ion-label>
+            <div class="threshold-input-wrapper">
+              <ion-input
+                type="number"
+                [(ngModel)]="config.defaultThreshold"
+                min="0"
+                placeholder="10"
+                class="threshold-input-field">
+              </ion-input>
+            </div>
+          </ion-item>
+
+          <ion-item>
+            <ion-label>
+              <h3>Alertas habilitadas</h3>
+              <p>Activar sistema de alertas</p>
+            </ion-label>
+            <ion-toggle [(ngModel)]="config.enabled" slot="end"></ion-toggle>
+          </ion-item>
+
+          <ion-item>
+            <ion-label>
+              <h3>Notificar en Dashboard</h3>
+              <p>Mostrar alertas en el dashboard</p>
+            </ion-label>
+            <ion-toggle [(ngModel)]="config.notifyOnDashboard" slot="end" [disabled]="!config.enabled"></ion-toggle>
+          </ion-item>
+
+          <ion-item>
+            <ion-label>
+              <h3>Notificar en Menú</h3>
+              <p>Mostrar badge en el menú lateral</p>
+            </ion-label>
+            <ion-toggle [(ngModel)]="config.notifyOnMenu" slot="end" [disabled]="!config.enabled"></ion-toggle>
+          </ion-item>
+        </ion-list>
+
+        <ion-button expand="block" (click)="saveConfig()" [disabled]="isSaving" class="save-button">
+          <ion-icon slot="start" name="save"></ion-icon>
+          {{ isSaving ? 'Guardando...' : 'Guardar Configuración' }}
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Resumen de Alertas -->
+    <ion-card class="summary-card" *ngIf="productAlerts.length > 0">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="alert-circle"></ion-icon>
+          Productos con Stock Bajo ({{ productAlerts.length }})
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="alerts-summary">
+          <div class="alert-item" *ngFor="let alert of productAlerts">
+            <div class="alert-info">
+              <span class="product-name">{{ alert.productName }}</span>
+              <span class="stock-info">
+                Stock: <strong [class.critical]="alert.isCritical">{{ alert.currentStock }}</strong> / 
+                Mínimo: {{ alert.minStock }}
+              </span>
+            </div>
+            <ion-button size="small" fill="outline" (click)="goToProducts()">
+              Ver
+            </ion-button>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Lista de Productos -->
+    <ion-card class="products-card">
+      <ion-card-header>
+        <ion-card-title>Configurar Umbrales por Producto</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Búsqueda -->
+        <ion-item class="search-item">
+          <ion-label position="stacked">Buscar producto</ion-label>
+          <ion-input
+            type="text"
+            [(ngModel)]="searchTerm"
+            placeholder="Nombre o categoría...">
+          </ion-input>
+        </ion-item>
+
+        <!-- Lista de productos -->
+        <ion-list>
+          <ion-item *ngFor="let product of filteredProducts" class="product-item">
+            <div class="product-content">
+              <img [src]="product.image" [alt]="product.name" class="product-thumbnail" *ngIf="product.image">
+              <div class="product-info">
+                <h3>{{ product.name }}</h3>
+                <p class="product-meta">
+                  Stock actual: <strong [class.low-stock]="product.quantity <= getProductThreshold(product)">
+                    {{ product.quantity }}
+                  </strong>
+                  | Categoría: {{ product.category }}
+                </p>
+                <div class="threshold-section">
+                  <span class="threshold-label">Umbral mínimo:</span>
+                  <div *ngIf="editingProductId !== product.id" class="threshold-display">
+                    <span class="threshold-value">
+                      {{ product.minStock ?? 'Global (' + config.defaultThreshold + ')' }}
+                    </span>
+                    <ion-button size="small" fill="clear" (click)="startEditing(product.id!, getProductThreshold(product))">
+                      Editar
+                    </ion-button>
+                    <ion-button
+                      *ngIf="product.minStock"
+                      size="small"
+                      fill="clear"
+                      color="danger"
+                      (click)="removeProductThreshold(product.id!)">
+                      Eliminar
+                    </ion-button>
+                  </div>
+                  <div *ngIf="editingProductId === product.id" class="threshold-edit">
+                    <ion-input
+                      type="number"
+                      [(ngModel)]="editingThreshold"
+                      min="0"
+                      class="threshold-input">
+                    </ion-input>
+                    <ion-button
+                      size="small"
+                      fill="solid"
+                      (click)="updateProductThreshold(product.id!, editingThreshold)">
+                      Guardar
+                    </ion-button>
+                    <ion-button size="small" fill="clear" (click)="cancelEditing()">
+                      Cancelar
+                    </ion-button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ion-item>
+        </ion-list>
+
+        <div *ngIf="filteredProducts.length === 0" class="empty-state">
+          <p>No se encontraron productos</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

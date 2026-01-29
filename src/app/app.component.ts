@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angula
 import { CommonModule } from '@angular/common';
 import { IonApp, IonRouterOutlet, IonMenu, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonIcon, IonLabel, IonButton, ToastController, MenuController } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { person, cube, business, home, pricetags, logIn, logOut, cash, barChart } from 'ionicons/icons';
+import { person, cube, business, home, pricetags, logIn, logOut, cash, barChart, alertCircle } from 'ionicons/icons';
 import { Router, RouterLink } from '@angular/router';
 import { BabyLoadingComponent } from './core/components/baby-loading/baby-loading.component';
 import { LoadingService } from './core/services/loading.service';
@@ -30,7 +30,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private authSubscription?: Subscription;
 
   constructor() {
-    addIcons({ person, cube, business, home, pricetags, logIn, logOut, cash, barChart });
+    addIcons({ person, cube, business, home, pricetags, logIn, logOut, cash, barChart, alertCircle });
   }
 
   ngOnInit() {
