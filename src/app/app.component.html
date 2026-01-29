@@ -47,6 +47,14 @@
           <ion-icon name="time" slot="start"></ion-icon>
           <ion-label>Historial de devoluciones</ion-label>
         </ion-item>
+        <ion-item *ngIf="isAuthenticated" button routerLink="/cash-closure" routerDirection="root">
+          <ion-icon name="wallet" slot="start"></ion-icon>
+          <ion-label>Corte de caja</ion-label>
+        </ion-item>
+        <ion-item *ngIf="isAuthenticated" button routerLink="/cash-closure-history" routerDirection="root">
+          <ion-icon name="list" slot="start"></ion-icon>
+          <ion-label>Historial de cortes</ion-label>
+        </ion-item>
         <ion-item *ngIf="isAuthenticated" button routerLink="/customers" routerDirection="root">
           <ion-icon name="person" slot="start"></ion-icon>
           <ion-label>Clientes</ion-label>

@@ -1,0 +1,107 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Historial de cortes</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="arrow-down"
+      pullingText="Arrastra para actualizar"
+      refreshingSpinner="circles"
+      refreshingText="Actualizando...">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <div class="header-section">
+    <h2>Historial de cortes de caja</h2>
+  </div>
+
+  <div class="date-filters">
+    <ion-item class="date-item">
+      <ion-label position="stacked">Desde</ion-label>
+      <ion-input type="date" [value]="startDate" (ionInput)="onStartDateChange($event)"></ion-input>
+    </ion-item>
+    <ion-item class="date-item">
+      <ion-label position="stacked">Hasta</ion-label>
+      <ion-input type="date" [value]="endDate" (ionInput)="onEndDateChange($event)"></ion-input>
+    </ion-item>
+  </div>
+
+  <div *ngIf="isLoading && filteredClosures.length === 0" class="loading-container">
+    <ion-spinner></ion-spinner>
+    <p>Cargando cortes...</p>
+  </div>
+
+  <div *ngIf="!isLoading || filteredClosures.length > 0">
+    <div class="table-view" *ngIf="filteredClosures.length > 0">
+      <table class="closures-table">
+        <thead>
+          <tr>
+            <th>N°</th>
+            <th>Fecha</th>
+            <th>Ventas</th>
+            <th>Contado</th>
+            <th>Diferencia</th>
+            <th>Notas</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of filteredClosures; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ formatDate(c.closureDate) }}</td>
+            <td>{{ formatCurrency(c.salesTotal) }} <span class="meta">({{ c.salesCount }})</span></td>
+            <td>{{ formatCurrency(c.totalDeclared) }}</td>
+            <td [class.diff-positive]="c.difference > 0" [class.diff-negative]="c.difference < 0">
+              {{ formatCurrency(c.difference) }}
+            </td>
+            <td class="notes-cell">{{ c.notes || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cards-view" *ngIf="filteredClosures.length > 0">
+      <ion-card *ngFor="let c of filteredClosures" class="closure-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="calendar-outline"></ion-icon>
+            {{ formatDate(c.closureDate) }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="card-row">
+            <span class="card-label">Ventas registradas</span>
+            <span class="card-value">{{ formatCurrency(c.salesTotal) }} ({{ c.salesCount }})</span>
+          </div>
+          <div class="card-row">
+            <span class="card-label">Total contado</span>
+            <span class="card-value">{{ formatCurrency(c.totalDeclared) }}</span>
+          </div>
+          <div class="card-row">
+            <span class="card-label">Diferencia</span>
+            <span class="card-value" [class.diff-positive]="c.difference > 0" [class.diff-negative]="c.difference < 0">
+              {{ formatCurrency(c.difference) }}
+            </span>
+          </div>
+          <p *ngIf="c.notes" class="card-notes">{{ c.notes }}</p>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <div *ngIf="closures.length === 0 && !isLoading" class="empty-state">
+      <ion-icon name="document-text" size="large"></ion-icon>
+      <h2>No hay cortes registrados</h2>
+      <p>Los cierres de caja aparecerán aquí.</p>
+    </div>
+    <div *ngIf="closures.length > 0 && filteredClosures.length === 0 && !isLoading" class="empty-state">
+      <ion-icon name="calendar-outline" size="large"></ion-icon>
+      <h2>Sin cortes en el rango</h2>
+      <p>No hay cortes entre las fechas seleccionadas.</p>
+    </div>
+  </div>
+</ion-content>

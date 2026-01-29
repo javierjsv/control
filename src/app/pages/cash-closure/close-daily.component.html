@@ -1,0 +1,183 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Corte de caja</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="header-section">
+    <h2>Cierre de caja diario</h2>
+    <p class="subtitle">Resumen por método de pago y comparación con ventas registradas</p>
+  </div>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="calendar"></ion-icon>
+        Fecha del corte
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item>
+        <ion-label position="stacked">Día a cerrar</ion-label>
+        <ion-input
+          type="date"
+          [value]="selectedDate"
+          (ionInput)="onDateInput($event)"
+          [disabled]="isLoading"></ion-input>
+      </ion-item>
+      <ion-button (click)="load()" [disabled]="isLoading" fill="outline" class="ion-margin-top">
+        <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+        <span *ngIf="!isLoading">Actualizar</span>
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner></ion-spinner>
+    <p>Cargando resumen...</p>
+  </div>
+
+  <ng-container *ngIf="!isLoading && salesSummary">
+    <ion-card *ngIf="alreadyClosed" class="already-closed-card">
+      <ion-card-content>
+        <ion-icon name="checkmark-circle" color="success"></ion-icon>
+        <p>Ya existe un corte de caja para el <strong>{{ formatDate(selectedDate) }}</strong>.</p>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="document-text"></ion-icon>
+          Ventas registradas ({{ salesSummary.count }})
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="summary-table-wrap">
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th>Método</th>
+                <th>Transacciones</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let m of salesSummary.byMethod">
+                <td>{{ getMethodLabel(m.method) }}</td>
+                <td>{{ m.count }}</td>
+                <td>{{ formatCurrency(m.total) }}</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="total-row">
+                <td>Total ventas</td>
+                <td>{{ salesSummary.count }}</td>
+                <td>{{ formatCurrency(salesSummary.total) }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngIf="!alreadyClosed">
+      <ion-card-header>
+        <ion-card-title>Cantidad contada / reportada</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="hint">Ingrese el monto contado o reportado por cada método de pago.</p>
+        <ion-item *ngFor="let m of salesSummary.byMethod" class="declared-item">
+          <ion-label position="stacked">{{ getMethodLabel(m.method) }}</ion-label>
+          <ion-input
+            type="number"
+            [value]="getDeclared(m.method)"
+            (ionInput)="onDeclaredChange(m.method, $event)"
+            min="0"
+            step="0.01"
+            placeholder="0"></ion-input>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngIf="!alreadyClosed">
+      <ion-card-header>
+        <ion-card-title>Comparación</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="summary-table-wrap">
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th>Método</th>
+                <th>Registrado</th>
+                <th>Contado</th>
+                <th>Diferencia</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let m of salesSummary.byMethod">
+                <td>{{ getMethodLabel(m.method) }}</td>
+                <td>{{ formatCurrency(m.total) }}</td>
+                <td>{{ formatCurrency(getDeclared(m.method)) }}</td>
+                <td [class.diff-positive]="getDiff(m.method) > 0" [class.diff-negative]="getDiff(m.method) < 0">
+                  {{ formatCurrency(getDiff(m.method)) }}
+                </td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="total-row">
+                <td>Total</td>
+                <td>{{ formatCurrency(salesSummary.total) }}</td>
+                <td>{{ formatCurrency(totalDeclared) }}</td>
+                <td [class.diff-positive]="difference > 0" [class.diff-negative]="difference < 0">
+                  {{ formatCurrency(difference) }}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngIf="!alreadyClosed">
+      <ion-card-header>
+        <ion-card-title>Notas (opcional)</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-textarea
+            [(ngModel)]="notes"
+            rows="3"
+            placeholder="Observaciones del cierre..."></ion-textarea>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-button
+      *ngIf="!alreadyClosed"
+      expand="block"
+      size="large"
+      (click)="closeBox()"
+      [disabled]="!canClose() || isSaving"
+      class="ion-margin-top close-btn">
+      <ion-spinner *ngIf="isSaving" name="crescent"></ion-spinner>
+      <ion-icon *ngIf="!isSaving" name="checkmark-circle" slot="start"></ion-icon>
+      {{ isSaving ? 'Guardando...' : 'Cerrar caja' }}
+    </ion-button>
+  </ng-container>
+
+  <div *ngIf="!isLoading && !salesSummary && selectedDate" class="empty-state">
+    <p>Seleccione una fecha y pulse Actualizar para cargar el resumen.</p>
+  </div>
+
+  <ion-card *ngIf="!isLoading && salesSummary && salesSummary.count === 0" class="no-sales-card">
+    <ion-card-content>
+      <p>No hay ventas registradas para esta fecha. Puede cerrar caja con montos en cero si corresponde.</p>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

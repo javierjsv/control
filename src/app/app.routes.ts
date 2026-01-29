@@ -72,6 +72,16 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'cash-closure',
+    loadComponent: () => import('./pages/cash-closure/close-daily.component').then((m) => m.CloseDailyComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'cash-closure-history',
+    loadComponent: () => import('./pages/cash-closure/closure-history.component').then((m) => m.ClosureHistoryComponent),
+    canActivate: [authGuard],
+  },
+  {
     path: 'login',
     loadComponent: () => import('./pages/login/login.component').then((m) => m.LoginComponent),
   },
