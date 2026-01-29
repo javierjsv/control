@@ -40,35 +40,97 @@
         </div>
       </div>
 
-      <!-- Lista de ventas recientes -->
-      <ion-card *ngIf="!selectedSale && !isLoadingSales">
-        <ion-card-header>
-          <ion-card-title>Ventas recientes</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-list>
-            <ion-item
-              *ngFor="let sale of sales"
-              button
-              (click)="selectSale(sale)"
-              [disabled]="sale.status === 'cancelled'">
-              <ion-label>
-                <h2>Venta #{{ sale.id?.substring(0, 8) }}</h2>
-                <p>{{ formatDate(sale.createdAt) }}</p>
-                <p>{{ formatCurrency(sale.total) }} - {{ sale.items.length }} producto(s)</p>
-              </ion-label>
-              <ion-icon
-                *ngIf="sale.status === 'cancelled'"
-                name="close"
-                color="danger"
-                slot="end"></ion-icon>
-            </ion-item>
-          </ion-list>
-          <p *ngIf="sales.length === 0" class="empty-message">
-            No hay ventas recientes disponibles
-          </p>
-        </ion-card-content>
-      </ion-card>
+      <div class="date-filters" *ngIf="!selectedSale && !isLoadingSales">
+        <ion-item class="date-item">
+          <ion-label position="stacked">Desde</ion-label>
+          <ion-input
+            type="date"
+            [value]="startDate"
+            (ionInput)="onStartDateChange($event)">
+          </ion-input>
+        </ion-item>
+        <ion-item class="date-item">
+          <ion-label position="stacked">Hasta</ion-label>
+          <ion-input
+            type="date"
+            [value]="endDate"
+            (ionInput)="onEndDateChange($event)">
+          </ion-input>
+        </ion-item>
+      </div>
+
+      <!-- Ventas recientes -->
+      <div *ngIf="!selectedSale && !isLoadingSales" class="recent-sales-section">
+        <div class="section-header">
+          <h2>Ventas recientes ({{ filteredSales.length }})</h2>
+        </div>
+
+        <p *ngIf="sales.length === 0" class="empty-message">
+          No hay ventas recientes disponibles
+        </p>
+        <div *ngIf="sales.length > 0 && filteredSales.length === 0" class="empty-state">
+          <ion-icon name="calendar-outline" size="large"></ion-icon>
+          <p class="empty-message">No hay ventas en el rango de fechas seleccionado</p>
+        </div>
+
+        <!-- Vista tabla (escritorio) -->
+        <div class="table-view" *ngIf="filteredSales.length > 0">
+          <table class="recent-sales-table">
+            <thead>
+              <tr>
+                <th>N°</th>
+                <th>ID Venta</th>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Productos</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let sale of filteredSales; let i = index"
+                (click)="selectSale(sale)"
+                [class.row-disabled]="sale.status === 'cancelled'"
+                class="clickable-row">
+                <td>{{ i + 1 }}</td>
+                <td>#{{ sale.id?.substring(0, 8) }}</td>
+                <td>{{ formatDate(sale.createdAt) }}</td>
+                <td>{{ sale.customerName || '-' }}</td>
+                <td>{{ sale.items.length }} producto(s)</td>
+                <td>{{ formatCurrency(sale.total) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Vista cards (móvil) -->
+        <div class="cards-view" *ngIf="filteredSales.length > 0">
+          <ion-card
+            *ngFor="let sale of filteredSales"
+            class="sale-row-card"
+            [class.card-disabled]="sale.status === 'cancelled'"
+            (click)="sale.status !== 'cancelled' && selectSale(sale)">
+            <ion-card-content>
+              <div class="card-row">
+                <span class="card-label">Venta</span>
+                <span class="card-value">#{{ sale.id?.substring(0, 8) }}</span>
+              </div>
+              <div class="card-row">
+                <span class="card-label">Fecha</span>
+                <span class="card-value">{{ formatDate(sale.createdAt) }}</span>
+              </div>
+              <div class="card-row">
+                <span class="card-label">Cliente</span>
+                <span class="card-value">{{ sale.customerName || '-' }}</span>
+              </div>
+              <div class="card-row">
+                <span class="card-label">Productos / Total</span>
+                <span class="card-value">{{ sale.items.length }} producto(s) · {{ formatCurrency(sale.total) }}</span>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </div>
 
       <!-- Spinner de carga -->
       <div *ngIf="isLoadingSales" class="loading-container">

@@ -20,6 +20,7 @@ import {
   IonRefresherContent,
   IonBadge,
   IonChip,
+  IonInput,
   ToastController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -29,6 +30,7 @@ import {
   cash,
   documentText,
   person,
+  calendarOutline,
 } from 'ionicons/icons';
 import { ReturnsService } from '../../services/returns.service';
 import { Return, ReturnReason } from '../../core/interfaces/return.interfaces';
@@ -61,12 +63,17 @@ import { Sale } from '../../core/interfaces/sale.interfaces';
     IonRefresherContent,
     IonBadge,
     IonChip,
+    IonInput,
   ],
 })
 export class ReturnsHistoryComponent implements OnInit {
   returns: Return[] = [];
+  filteredReturns: Return[] = [];
   isLoading = false;
   salesMap = new Map<string, Sale>();
+
+  startDate: string | null = null;
+  endDate: string | null = null;
 
   private returnsService = inject(ReturnsService);
   private salesService = inject(SalesService);
@@ -87,6 +94,7 @@ export class ReturnsHistoryComponent implements OnInit {
       cash,
       documentText,
       person,
+      calendarOutline,
     });
   }
 
@@ -102,12 +110,81 @@ export class ReturnsHistoryComponent implements OnInit {
 
       // Cargar información de las ventas relacionadas
       await this.loadSalesInfo();
+      this.applyFilter();
     } catch (error) {
       console.error('Error al cargar devoluciones:', error);
       await this.showToast('Error al cargar devoluciones', 'danger');
     } finally {
       this.isLoading = false;
     }
+  }
+
+  async onStartDateChange(event: CustomEvent) {
+    this.startDate = (event.detail?.value as string) || null;
+
+    if (this.startDate && this.endDate) {
+      const start = new Date(this.startDate);
+      const end = new Date(this.endDate);
+      if (start > end) {
+        await this.showToast(
+          'La fecha "Desde" no puede ser mayor que la fecha "Hasta"',
+          'warning'
+        );
+        this.startDate = null;
+        return;
+      }
+    }
+
+    this.applyFilter();
+  }
+
+  async onEndDateChange(event: CustomEvent) {
+    this.endDate = (event.detail?.value as string) || null;
+
+    if (this.startDate && this.endDate) {
+      const start = new Date(this.startDate);
+      const end = new Date(this.endDate);
+      if (start > end) {
+        await this.showToast(
+          'La fecha "Hasta" no puede ser menor que la fecha "Desde"',
+          'warning'
+        );
+        this.endDate = null;
+        return;
+      }
+    }
+
+    this.applyFilter();
+  }
+
+  applyFilter() {
+    let start: Date | null = null;
+    let end: Date | null = null;
+
+    if (this.startDate) {
+      start = new Date(this.startDate);
+      start.setHours(0, 0, 0, 0);
+    }
+    if (this.endDate) {
+      end = new Date(this.endDate);
+      end.setHours(23, 59, 59, 999);
+    }
+
+    this.filteredReturns = this.returns.filter((r) => {
+      let matchesDate = true;
+      if (start || end) {
+        if (!r.createdAt) {
+          matchesDate = false;
+        } else {
+          const d = (r.createdAt as { toDate?: () => Date }).toDate
+            ? (r.createdAt as { toDate: () => Date }).toDate()
+            : new Date(r.createdAt as Date | string);
+          if (start && d < start) matchesDate = false;
+          if (end && d > end) matchesDate = false;
+        }
+      }
+      return matchesDate;
+    });
   }
 
   async loadSalesInfo() {

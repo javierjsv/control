@@ -34,6 +34,7 @@ import {
   checkmark,
   alertCircle,
   cash,
+  calendarOutline,
 } from 'ionicons/icons';
 import { SalesService } from '../../services/sales.service';
 import { ReturnsService } from '../../services/returns.service';
@@ -75,9 +76,12 @@ import { LoadingService } from '../../core/services/loading.service';
 })
 export class CreateReturnComponent implements OnInit {
   sales: Sale[] = [];
+  filteredSales: Sale[] = [];
   selectedSale: Sale | null = null;
   searchSaleId = '';
   isLoadingSales = false;
+  startDate: string | null = null;
+  endDate: string | null = null;
   isLoadingReturn = false;
   returnType: 'full' | 'partial' = 'full';
   returnItems: ReturnItem[] = [];
@@ -106,6 +110,7 @@ export class CreateReturnComponent implements OnInit {
       checkmark,
       alertCircle,
       cash,
+      calendarOutline,
     });
   }
 
@@ -117,14 +122,82 @@ export class CreateReturnComponent implements OnInit {
     this.isLoadingSales = true;
     try {
       const result = await this.salesService.getPaginated();
-      // Filtrar solo ventas completadas (no canceladas)
       this.sales = result.sales.filter((s) => s.status === 'completed');
+      this.applyFilter();
     } catch (error) {
       console.error('Error al cargar ventas:', error);
       await this.showToast('Error al cargar ventas', 'danger');
     } finally {
       this.isLoadingSales = false;
     }
+  }
+
+  async onStartDateChange(event: CustomEvent) {
+    this.startDate = (event.detail?.value as string) || null;
+
+    if (this.startDate && this.endDate) {
+      const start = new Date(this.startDate);
+      const end = new Date(this.endDate);
+      if (start > end) {
+        await this.showToast(
+          'La fecha "Desde" no puede ser mayor que la fecha "Hasta"',
+          'warning'
+        );
+        this.startDate = null;
+        return;
+      }
+    }
+
+    this.applyFilter();
+  }
+
+  async onEndDateChange(event: CustomEvent) {
+    this.endDate = (event.detail?.value as string) || null;
+
+    if (this.startDate && this.endDate) {
+      const start = new Date(this.startDate);
+      const end = new Date(this.endDate);
+      if (start > end) {
+        await this.showToast(
+          'La fecha "Hasta" no puede ser menor que la fecha "Desde"',
+          'warning'
+        );
+        this.endDate = null;
+        return;
+      }
+    }
+
+    this.applyFilter();
+  }
+
+  applyFilter() {
+    let start: Date | null = null;
+    let end: Date | null = null;
+
+    if (this.startDate) {
+      start = new Date(this.startDate);
+      start.setHours(0, 0, 0, 0);
+    }
+    if (this.endDate) {
+      end = new Date(this.endDate);
+      end.setHours(23, 59, 59, 999);
+    }
+
+    this.filteredSales = this.sales.filter((s) => {
+      let matchesDate = true;
+      if (start || end) {
+        if (!s.createdAt) {
+          matchesDate = false;
+        } else {
+          const d = (s.createdAt as { toDate?: () => Date }).toDate
+            ? (s.createdAt as { toDate: () => Date }).toDate()
+            : new Date(s.createdAt as Date | string);
+          if (start && d < start) matchesDate = false;
+          if (end && d > end) matchesDate = false;
+        }
+      }
+      return matchesDate;
+    });
   }
 
   async searchSale() {

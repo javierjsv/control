@@ -27,11 +27,30 @@
     <!-- Lista de devoluciones -->
     <div *ngIf="!isLoading || returns.length > 0">
       <div class="header-section">
-        <h2>Historial de Devoluciones ({{ returns.length }})</h2>
+        <h2>Historial de Devoluciones ({{ filteredReturns.length }})</h2>
+      </div>
+
+      <div class="date-filters">
+        <ion-item class="date-item">
+          <ion-label position="stacked">Desde</ion-label>
+          <ion-input
+            type="date"
+            [value]="startDate"
+            (ionInput)="onStartDateChange($event)">
+          </ion-input>
+        </ion-item>
+        <ion-item class="date-item">
+          <ion-label position="stacked">Hasta</ion-label>
+          <ion-input
+            type="date"
+            [value]="endDate"
+            (ionInput)="onEndDateChange($event)">
+          </ion-input>
+        </ion-item>
       </div>
 
       <!-- Vista de Tabla para pantallas grandes (mayor a tablet) -->
-      <div class="table-view" *ngIf="returns.length > 0">
+      <div class="table-view" *ngIf="filteredReturns.length > 0">
         <table class="returns-table">
           <thead>
             <tr>
@@ -46,7 +65,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let returnItem of returns; let i = index">
+            <tr *ngFor="let returnItem of filteredReturns; let i = index">
               <td>{{ i + 1 }}</td>
               <td>
                 <div class="product-name-cell">
@@ -74,8 +93,8 @@
       </div>
 
       <!-- Vista de Tarjetas para móviles y tablets -->
-      <div class="cards-view" *ngIf="returns.length > 0">
-        <ion-card *ngFor="let returnItem of returns" class="return-card">
+      <div class="cards-view" *ngIf="filteredReturns.length > 0">
+        <ion-card *ngFor="let returnItem of filteredReturns" class="return-card">
       <ion-card-header>
         <div class="card-header-content">
           <div>
@@ -156,6 +175,11 @@
         <ion-icon name="arrow-undo" size="large"></ion-icon>
         <h2>No hay devoluciones registradas</h2>
         <p>Las devoluciones y cancelaciones aparecerán aquí</p>
+      </div>
+      <div *ngIf="returns.length > 0 && filteredReturns.length === 0 && !isLoading" class="empty-state">
+        <ion-icon name="calendar-outline" size="large"></ion-icon>
+        <h2>Sin devoluciones en el rango de fechas</h2>
+        <p>No se encontraron devoluciones entre "Desde" y "Hasta". Prueba otro rango.</p>
       </div>
     </div>
   </div>
