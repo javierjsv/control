@@ -18,57 +18,97 @@
   </ion-refresher>
 
   <div class="dashboard-section">
-    <h2 class="dashboard-title">📊 Resumen del día</h2>
-    
     <div *ngIf="isLoadingStats" class="dashboard-loading">
       <ion-spinner></ion-spinner>
       <p>Cargando estadísticas...</p>
     </div>
 
     <div *ngIf="!isLoadingStats && dashboardStats" class="dashboard-content">
-      <!-- Cards de estadísticas principales -->
-      <div class="stats-cards">
-        <ion-card class="stat-card sales-card">
-          <ion-card-content>
-            <div class="stat-icon">💰</div>
-            <div class="stat-info">
-              <h3 class="stat-label">Ventas del día</h3>
-              <p class="stat-value">{{ formatCurrency(dashboardStats.todaySales.total) }}</p>
-              <p class="stat-subtitle">{{ dashboardStats.todaySales.count }} ventas</p>
-            </div>
-          </ion-card-content>
-        </ion-card>
+      <!-- Resumen de hoy -->
+      <div class="summary-section">
+        <div class="summary-header">
+          <div class="summary-icon">🎯</div>
+          <div class="summary-title-content">
+            <h2 class="summary-title">Resumen de hoy</h2>
+            <p class="summary-subtitle">Hoy, has realizado:</p>
+          </div>
+        </div>
 
-        <ion-card class="stat-card average-card">
-          <ion-card-content>
-            <div class="stat-icon">📈</div>
-            <div class="stat-info">
-              <h3 class="stat-label">Promedio</h3>
-              <p class="stat-value">{{ formatCurrency(dashboardStats.todaySales.average) }}</p>
-              <p class="stat-subtitle">Por venta</p>
-            </div>
-          </ion-card-content>
-        </ion-card>
+        <div class="stats-cards">
+          <ion-card class="stat-card sales-card">
+            <ion-card-content>
+              <div class="stat-icon-wrapper">
+                <ion-icon name="cash" class="stat-icon-white"></ion-icon>
+              </div>
+              <div class="stat-info">
+                <h3 class="stat-label">VENTAS DEL DÍA</h3>
+                <p class="stat-value">{{ formatCurrency(dashboardStats.todaySales.total) }}</p>
+                <p class="stat-subtitle">{{ dashboardStats.todaySales.count }} ventas</p>
+              </div>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card class="stat-card average-card">
+            <ion-card-content>
+              <div class="stat-icon-wrapper">
+                <ion-icon name="receipt" class="stat-icon-white"></ion-icon>
+              </div>
+              <div class="stat-info">
+                <h3 class="stat-label">TICKET PROMEDIO</h3>
+                <p class="stat-value">{{ formatCurrency(dashboardStats.todaySales.average) }}</p>
+                <p class="stat-subtitle">Por venta</p>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </div>
       </div>
 
-      <!-- Gráfico de ventas últimos 7 días -->
+      <!-- Ventas de la semana -->
       <ion-card class="chart-card">
         <ion-card-header>
           <ion-card-title>
             <ion-icon name="bar-chart"></ion-icon>
-            Ventas últimos 7 días
+            Ventas de la semana
           </ion-card-title>
         </ion-card-header>
         <ion-card-content>
-          <div class="chart-container">
-            <div class="chart-bars">
-              <div *ngFor="let day of dashboardStats.last7DaysSales" class="chart-bar-wrapper">
-                <div class="chart-bar" [style.height.%]="getBarHeight(day.total, dashboardStats.last7DaysSales)">
-                  <span class="bar-value">{{ formatCurrency(day.total) }}</span>
-                </div>
-                <span class="bar-label">{{ day.date }}</span>
-              </div>
-            </div>
+          <!-- Selector de período -->
+          <div class="period-selector">
+            <button 
+              class="period-btn" 
+              [class.active]="selectedPeriod === 'today'"
+              (click)="selectPeriod('today')">
+              Hoy
+            </button>
+            <button 
+              class="period-btn" 
+              [class.active]="selectedPeriod === '7days'"
+              (click)="selectPeriod('7days')">
+              Últimos 7 días
+            </button>
+            <button 
+              class="period-btn" 
+              [class.active]="selectedPeriod === '30days'"
+              (click)="selectPeriod('30days')">
+              Últimos 30 días
+            </button>
+          </div>
+
+          <!-- Gráfico -->
+          <div class="chart-container" *ngIf="chartOptions.series && chartOptions.chart">
+            <apx-chart
+              #chart
+              [series]="chartOptions.series!"
+              [chart]="chartOptions.chart!"
+              [xaxis]="chartOptions.xaxis!"
+              [yaxis]="chartOptions.yaxis!"
+              [dataLabels]="chartOptions.dataLabels!"
+              [tooltip]="chartOptions.tooltip!"
+              [legend]="chartOptions.legend!"
+              [stroke]="chartOptions.stroke!"
+              [plotOptions]="chartOptions.plotOptions!"
+              [colors]="chartOptions.colors!">
+            </apx-chart>
           </div>
         </ion-card-content>
       </ion-card>
@@ -79,22 +119,23 @@
         <ion-card class="top-products-card">
           <ion-card-header>
             <ion-card-title>
-              <ion-icon name="trending-up"></ion-icon>
+              <ion-icon name="star"></ion-icon>
               Top productos
             </ion-card-title>
           </ion-card-header>
           <ion-card-content>
-            <div *ngIf="dashboardStats.topProducts.length === 0" class="empty-state-small">
+            <div *ngIf="topProductsWithImages.length === 0" class="empty-state-small">
               <p>No hay productos vendidos aún</p>
             </div>
-            <div *ngIf="dashboardStats.topProducts.length > 0" class="top-products-list">
-              <div *ngFor="let product of dashboardStats.topProducts; let i = index" class="top-product-item">
+            <div *ngIf="topProductsWithImages.length > 0" class="top-products-list">
+              <div *ngFor="let product of topProductsWithImages; let i = index" class="top-product-item">
                 <span class="product-rank">#{{ i + 1 }}</span>
+                <img [src]="product.image" [alt]="product.productName" class="product-thumbnail" *ngIf="product.image">
                 <div class="product-info">
                   <span class="product-name-small">{{ product.productName }}</span>
                   <span class="product-sold">{{ product.totalSold }} vendidos</span>
                 </div>
-                <span class="product-revenue">{{ formatCurrency(product.totalRevenue) }}</span>
+                <span class="product-price">{{ formatCurrency(product.priceSale) }}</span>
               </div>
             </div>
           </ion-card-content>
@@ -103,23 +144,24 @@
         <!-- Productos con stock bajo -->
         <ion-card class="low-stock-card">
           <ion-card-header>
-            <ion-card-title>
-              <ion-icon name="alert-circle"></ion-icon>
+            <ion-card-title class="low-stock-title">
+              <ion-icon name="warning"></ion-icon>
               Stock bajo
             </ion-card-title>
           </ion-card-header>
           <ion-card-content>
-            <div *ngIf="dashboardStats.lowStockProducts.length === 0" class="empty-state-small">
+            <div *ngIf="lowStockProductsWithImages.length === 0" class="empty-state-small">
               <p>✅ Todo el stock está bien</p>
             </div>
-            <div *ngIf="dashboardStats.lowStockProducts.length > 0" class="low-stock-list">
-              <div *ngFor="let product of dashboardStats.lowStockProducts" class="low-stock-item">
+            <div *ngIf="lowStockProductsWithImages.length > 0" class="low-stock-list">
+              <div *ngFor="let product of lowStockProductsWithImages" class="low-stock-item">
+                <img [src]="product.image" [alt]="product.name" class="product-thumbnail" *ngIf="product.image">
                 <div class="stock-info">
                   <span class="product-name-small">{{ product.name }}</span>
                   <span class="stock-quantity">Stock: {{ product.quantity }}</span>
                 </div>
-                <ion-button size="small" fill="outline" (click)="goToProducts()">
-                  Ver
+                <ion-button size="small" fill="outline" class="view-button" (click)="goToProducts()">
+                  VER
                   <ion-icon slot="end" name="arrow-forward"></ion-icon>
                 </ion-button>
               </div>
@@ -127,25 +169,6 @@
           </ion-card-content>
         </ion-card>
       </div>
-
-      <!-- Accesos rápidos -->
-      <ion-card class="quick-actions-card">
-        <ion-card-header>
-          <ion-card-title>Accesos rápidos</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <div class="quick-actions">
-            <ion-button expand="block" (click)="goToSales()" class="action-button">
-              <ion-icon slot="start" name="cash"></ion-icon>
-              Ver todas las ventas
-            </ion-button>
-            <ion-button expand="block" (click)="goToFullSale()" class="action-button">
-              <ion-icon slot="start" name="add-circle"></ion-icon>
-              Nueva venta
-            </ion-button>
-          </div>
-        </ion-card-content>
-      </ion-card>
     </div>
   </div>
 </ion-content>

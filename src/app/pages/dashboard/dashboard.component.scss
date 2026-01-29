@@ -3,15 +3,6 @@
   margin-bottom: 2rem;
 }
 
-.dashboard-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--ion-color-primary);
-  margin: 0 0 1.5rem 0;
-  padding-bottom: 0.75rem;
-  border-bottom: 2px solid var(--ion-color-primary);
-}
-
 .dashboard-loading {
   display: flex;
   flex-direction: column;
@@ -28,7 +19,41 @@
 .dashboard-content {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
+}
+
+// Resumen de hoy
+.summary-section {
+  margin-bottom: 1rem;
+}
+
+.summary-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  .summary-icon {
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .summary-title-content {
+    flex: 1;
+
+    .summary-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--ion-color-dark);
+      margin: 0 0 0.25rem 0;
+    }
+
+    .summary-subtitle {
+      font-size: 0.95rem;
+      color: var(--ion-color-medium);
+      margin: 0;
+    }
+  }
 }
 
 // Cards de estadísticas principales
@@ -44,108 +69,95 @@
 
 .stat-card {
   margin: 0;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;
+  overflow: hidden;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
   }
 
   ion-card-content {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1.5rem;
+    gap: 1.5rem;
+    padding: 2rem 1.5rem;
   }
 
-  .stat-icon {
-    font-size: 3rem;
-    line-height: 1;
+  .stat-icon-wrapper {
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+
+    .stat-icon-white {
+      font-size: 2rem;
+      color: white;
+    }
   }
 
   .stat-info {
     flex: 1;
 
     .stat-label {
-      font-size: 0.9rem;
-      color: var(--ion-color-medium);
-      margin: 0 0 0.5rem 0;
-      font-weight: 500;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.9);
+      margin: 0 0 0.75rem 0;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 1px;
     }
 
     .stat-value {
-      font-size: 1.75rem;
+      font-size: 2rem;
       font-weight: 700;
-      color: var(--ion-color-dark);
-      margin: 0 0 0.25rem 0;
+      color: white;
+      margin: 0 0 0.5rem 0;
       line-height: 1.2;
     }
 
     .stat-subtitle {
-      font-size: 0.85rem;
-      color: var(--ion-color-medium);
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.9);
       margin: 0;
     }
   }
 
   &.sales-card {
     background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-    color: white;
-
-    .stat-icon {
-      filter: brightness(0) invert(1);
-    }
-
-    .stat-info {
-      .stat-label,
-      .stat-value,
-      .stat-subtitle {
-        color: white;
-      }
-    }
   }
 
   &.average-card {
     background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
-    color: white;
-
-    .stat-icon {
-      filter: brightness(0) invert(1);
-    }
-
-    .stat-info {
-      .stat-label,
-      .stat-value,
-      .stat-subtitle {
-        color: white;
-      }
-    }
   }
 }
 
 // Gráfico de ventas
 .chart-card {
   margin: 0;
-  border-radius: 12px;
+  border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
   ion-card-header {
-    padding-bottom: 0.5rem;
+    padding-bottom: 1rem;
 
     ion-card-title {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      font-size: 1.1rem;
+      gap: 0.75rem;
+      font-size: 1.25rem;
       font-weight: 600;
-      color: var(--ion-color-primary);
+      color: var(--ion-color-dark);
 
       ion-icon {
-        font-size: 1.25rem;
+        font-size: 1.5rem;
+        color: var(--ion-color-primary);
       }
     }
   }
@@ -155,68 +167,69 @@
   }
 }
 
+// Selector de período
+.period-selector {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  background: #f5f5f5;
+  padding: 0.25rem;
+  border-radius: 12px;
+
+  .period-btn {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--ion-color-medium);
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    &.active {
+      background: var(--ion-color-primary);
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(var(--ion-color-primary-rgb), 0.3);
+    }
+  }
+}
+
 .chart-container {
   padding: 1rem 0;
-}
-
-.chart-bars {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-around;
-  gap: 0.5rem;
-  height: 200px;
-  padding: 0 0.5rem;
-}
-
-.chart-bar-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100%;
-  gap: 0.5rem;
-}
-
-.chart-bar {
   width: 100%;
-  background: linear-gradient(180deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
-  border-radius: 8px 8px 0 0;
-  min-height: 20px;
-  position: relative;
-  transition: all 0.3s ease;
-  cursor: pointer;
+  overflow-x: auto;
 
-  &:hover {
-    opacity: 0.8;
-    transform: scaleY(1.05);
+  ::ng-deep {
+    .apexcharts-canvas {
+      margin: 0 auto;
+    }
+
+    .apexcharts-xaxis-label {
+      font-size: 11px !important;
+      fill: #666 !important;
+    }
+
+    .apexcharts-yaxis-label {
+      font-size: 11px !important;
+      fill: #666 !important;
+    }
+
+    .apexcharts-tooltip {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+      border-radius: 8px !important;
+    }
+
+    .apexcharts-data-labels {
+      font-weight: 600 !important;
+    }
   }
-
-  .bar-value {
-    position: absolute;
-    top: -25px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: var(--ion-color-dark);
-    white-space: nowrap;
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
-  &:hover .bar-value {
-    opacity: 1;
-  }
-}
-
-.bar-label {
-  font-size: 0.75rem;
-  color: var(--ion-color-medium);
-  text-align: center;
-  white-space: nowrap;
-  transform: rotate(-45deg);
-  transform-origin: center;
-  margin-top: 0.5rem;
 }
 
 // Grid de dashboard
@@ -234,22 +247,31 @@
 .top-products-card,
 .low-stock-card {
   margin: 0;
-  border-radius: 12px;
+  border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
   ion-card-header {
-    padding-bottom: 0.5rem;
+    padding-bottom: 1rem;
 
     ion-card-title {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      font-size: 1.1rem;
+      gap: 0.75rem;
+      font-size: 1.25rem;
       font-weight: 600;
-      color: var(--ion-color-primary);
+      color: var(--ion-color-dark);
 
       ion-icon {
-        font-size: 1.25rem;
+        font-size: 1.5rem;
+        color: var(--ion-color-primary);
+      }
+
+      &.low-stock-title {
+        color: #ff9800;
+
+        ion-icon {
+          color: #ff9800;
+        }
       }
     }
   }
@@ -259,16 +281,16 @@
 .low-stock-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .top-product-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
+  gap: 1rem;
+  padding: 1rem;
   background: #f8f8f8;
-  border-radius: 8px;
+  border-radius: 12px;
   transition: background 0.2s;
 
   &:hover {
@@ -276,10 +298,19 @@
   }
 
   .product-rank {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--ion-color-primary);
-    min-width: 30px;
+    min-width: 40px;
+    text-align: center;
+  }
+
+  .product-thumbnail {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
   }
 
   .product-info {
@@ -287,11 +318,15 @@
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    min-width: 0;
 
     .product-name-small {
       font-size: 0.95rem;
       font-weight: 600;
       color: var(--ion-color-dark);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .product-sold {
@@ -300,9 +335,9 @@
     }
   }
 
-  .product-revenue {
-    font-size: 0.9rem;
-    font-weight: 600;
+  .product-price {
+    font-size: 1rem;
+    font-weight: 700;
     color: var(--ion-color-primary);
     white-space: nowrap;
   }
@@ -311,66 +346,60 @@
 .low-stock-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 1rem;
-  padding: 0.75rem;
-  background: #fff3cd;
-  border-left: 4px solid #ffc107;
-  border-radius: 8px;
+  padding: 1rem;
+  background: #fff8e1;
+  border-left: 4px solid #ff9800;
+  border-radius: 12px;
+
+  .product-thumbnail {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
 
   .stock-info {
     flex: 1;
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    min-width: 0;
 
     .product-name-small {
       font-size: 0.95rem;
       font-weight: 600;
       color: var(--ion-color-dark);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .stock-quantity {
       font-size: 0.85rem;
-      color: #856404;
-      font-weight: 500;
+      color: #f57c00;
+      font-weight: 600;
     }
+  }
+
+  .view-button {
+    --color: #ff9800;
+    --border-color: #ff9800;
+    --background: transparent;
+    font-weight: 600;
+    font-size: 0.85rem;
+    --padding-start: 1rem;
+    --padding-end: 1rem;
+    --padding-top: 0.5rem;
+    --padding-bottom: 0.5rem;
+    white-space: nowrap;
   }
 }
 
 .empty-state-small {
   text-align: center;
-  padding: 1.5rem;
+  padding: 2rem;
   color: var(--ion-color-medium);
   font-size: 0.9rem;
-}
-
-// Accesos rápidos
-.quick-actions-card {
-  margin: 0;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-
-  ion-card-header {
-    padding-bottom: 0.5rem;
-
-    ion-card-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--ion-color-primary);
-    }
-  }
-}
-
-.quick-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.action-button {
-  --border-radius: 8px;
-  --padding-top: 0.75rem;
-  --padding-bottom: 0.75rem;
-  font-weight: 500;
 }
