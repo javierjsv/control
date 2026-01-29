@@ -1,0 +1,12 @@
+rules_version = '2';
+// Desplegar con: firebase deploy --only firestore:rules
+// (configura firebase.json y firebase project antes)
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Cortes de caja: solo usuarios autenticados pueden leer y escribir
+    match /cash_closures/{closureId} {
+      allow read, create, update, delete: if request.auth != null;
+    }
+  }
+}

@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header class="no-print">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
@@ -13,7 +13,24 @@
     <p class="subtitle">Resumen por método de pago y comparación con ventas registradas</p>
   </div>
 
-  <ion-card>
+  <div class="print-title" *ngIf="salesSummary" id="print-corte-title">
+    <h1>Corte de caja</h1>
+    <p class="print-period">Fecha: {{ formatDate(selectedDate) }}</p>
+    <p class="print-date">Generado: {{ formatDatePrint() }}</p>
+  </div>
+
+  <div class="export-actions no-print" *ngIf="salesSummary && !isLoading">
+    <ion-button (click)="exportToExcel()" fill="solid" size="small">
+      <ion-icon name="download" slot="start"></ion-icon>
+      Exportar Excel
+    </ion-button>
+    <ion-button (click)="printCorte()" fill="outline" size="small">
+      <ion-icon name="print" slot="start"></ion-icon>
+      Imprimir
+    </ion-button>
+  </div>
+
+  <ion-card class="no-print">
     <ion-card-header>
       <ion-card-title>
         <ion-icon name="calendar"></ion-icon>
@@ -42,7 +59,7 @@
   </div>
 
   <ng-container *ngIf="!isLoading && salesSummary">
-    <ion-card *ngIf="alreadyClosed" class="already-closed-card">
+    <ion-card *ngIf="alreadyClosed" class="already-closed-card no-print">
       <ion-card-content>
         <ion-icon name="checkmark-circle" color="success"></ion-icon>
         <p>Ya existe un corte de caja para el <strong>{{ formatDate(selectedDate) }}</strong>.</p>
@@ -85,7 +102,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card *ngIf="!alreadyClosed">
+    <ion-card *ngIf="!alreadyClosed" class="no-print">
       <ion-card-header>
         <ion-card-title>Cantidad contada / reportada</ion-card-title>
       </ion-card-header>
@@ -144,7 +161,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card *ngIf="!alreadyClosed">
+    <ion-card *ngIf="!alreadyClosed" class="no-print">
       <ion-card-header>
         <ion-card-title>Notas (opcional)</ion-card-title>
       </ion-card-header>
@@ -164,7 +181,7 @@
       size="large"
       (click)="closeBox()"
       [disabled]="!canClose() || isSaving"
-      class="ion-margin-top close-btn">
+      class="ion-margin-top close-btn no-print">
       <ion-spinner *ngIf="isSaving" name="crescent"></ion-spinner>
       <ion-icon *ngIf="!isSaving" name="checkmark-circle" slot="start"></ion-icon>
       {{ isSaving ? 'Guardando...' : 'Cerrar caja' }}
@@ -175,7 +192,7 @@
     <p>Seleccione una fecha y pulse Actualizar para cargar el resumen.</p>
   </div>
 
-  <ion-card *ngIf="!isLoading && salesSummary && salesSummary.count === 0" class="no-sales-card">
+  <ion-card *ngIf="!isLoading && salesSummary && salesSummary.count === 0" class="no-sales-card no-print">
     <ion-card-content>
       <p>No hay ventas registradas para esta fecha. Puede cerrar caja con montos en cero si corresponde.</p>
     </ion-card-content>

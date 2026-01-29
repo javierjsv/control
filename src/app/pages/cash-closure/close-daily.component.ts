@@ -21,8 +21,9 @@ import {
   IonTextarea,
   ToastController,
 } from '@ionic/angular/standalone';
+import * as XLSX from 'xlsx';
 import { addIcons } from 'ionicons';
-import { cash, card, arrowRedo, documentText, checkmarkCircle, calendar } from 'ionicons/icons';
+import { cash, card, arrowRedo, documentText, checkmarkCircle, calendar, download, print } from 'ionicons/icons';
 import { CashClosureService } from '../../services/cash-closure.service';
 import {
   SalesSummaryForDay,
@@ -75,7 +76,7 @@ export class CloseDailyComponent implements OnInit {
   private toastController = inject(ToastController);
 
   constructor() {
-    addIcons({ cash, card, arrowRedo, documentText, checkmarkCircle, calendar });
+    addIcons({ cash, card, arrowRedo, documentText, checkmarkCircle, calendar, download, print });
   }
 
   ngOnInit() {
@@ -215,6 +216,75 @@ export class CloseDailyComponent implements OnInit {
     if (!str) return '';
     const d = new Date(str + 'T12:00:00');
     return d.toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  formatDatePrint(): string {
+    return new Date().toLocaleString('es-CO', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
+  async exportToExcel(): Promise<void> {
+    if (!this.salesSummary) return;
+    try {
+      const wb = XLSX.utils.book_new();
+      const rows: (string | number)[][] = [
+        ['Corte de caja'],
+        ['Fecha', this.formatDate(this.selectedDate)],
+        [''],
+        ['Ventas registradas'],
+        ['Método', 'Transacciones', 'Total'],
+        ...this.salesSummary.byMethod.map((m) => [
+          this.getMethodLabel(m.method),
+          m.count,
+          m.total,
+        ]),
+        ['Total', this.salesSummary.count, this.salesSummary.total],
+        [''],
+        ['Cantidad contada / Comparación'],
+        ['Método', 'Registrado', 'Contado', 'Diferencia'],
+        ...this.salesSummary.byMethod.map((m) => [
+          this.getMethodLabel(m.method),
+          m.total,
+          this.getDeclared(m.method),
+          this.getDiff(m.method),
+        ]),
+        ['Total', this.salesSummary.total, this.totalDeclared, this.difference],
+      ];
+      if (this.notes.trim()) {
+        rows.push(['']);
+        rows.push(['Notas', this.notes.trim()]);
+      }
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'Corte');
+      const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([buf], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `corte_caja_${this.selectedDate}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+      await this.showToast('Corte exportado a Excel correctamente', 'success');
+    } catch (e) {
+      console.error(e);
+      await this.showToast('Error al exportar a Excel', 'danger');
+    }
+  }
+
+  printCorte(): void {
+    if (!this.salesSummary) return;
+    const orig = document.title;
+    document.title = `Corte de caja - ${this.selectedDate}`;
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => { document.title = orig; }, 500);
+    }, 100);
   }
 
   async showToast(message: string, color: 'success' | 'danger' | 'warning' = 'success') {

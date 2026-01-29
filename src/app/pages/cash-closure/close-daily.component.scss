@@ -120,3 +120,63 @@ ion-card {
 .close-btn {
   margin-bottom: 2rem;
 }
+
+.export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.print-title {
+  display: none;
+}
+
+@media print {
+  .print-title {
+    display: block !important;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #333;
+
+    h1 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #000;
+    }
+
+    .print-period {
+      margin: 0.5rem 0;
+      font-size: 1rem;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .print-date {
+      margin: 0.5rem 0 0 0;
+      font-size: 0.9rem;
+      color: #666;
+    }
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  ion-header,
+  .export-actions {
+    display: none !important;
+  }
+
+  @page {
+    margin: 1.5cm;
+    size: A4;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
