@@ -187,5 +187,20 @@
   <div class="loading-overlay" *ngIf="isLoading">
     <ion-spinner></ion-spinner>
   </div>
+
+  <ion-modal
+    [isOpen]="showReceiptModal"
+    [breakpoints]="[0, 0.5, 0.75, 0.95, 1]"
+    [initialBreakpoint]="0.95"
+    (willDismiss)="showReceiptModal = false">
+    <ng-template>
+      <app-receipt
+        [saleId]="lastSaleId"
+        [customerPhone]="lastCustomerPhone"
+        [customerEmail]="lastCustomerEmail"
+        (closed)="showReceiptModal = false">
+      </app-receipt>
+    </ng-template>
+  </ion-modal>
 </ion-content>
 

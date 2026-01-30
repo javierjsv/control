@@ -21,6 +21,7 @@ import {
   IonCardContent,
   IonSpinner,
   IonList,
+  IonModal,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { cash } from 'ionicons/icons';
@@ -32,6 +33,7 @@ import { Customer } from '../../core/interfaces/customer.interfaces';
 import { LoadingService } from '../../core/services/loading.service';
 import { ToastController } from '@ionic/angular';
 import { SaleItem } from '../../core/interfaces/sale.interfaces';
+import { ReceiptComponent } from '../receipt/receipt.component';
 
 interface CartItem {
   product: Product;
@@ -65,6 +67,8 @@ interface CartItem {
     IonCardContent,
     IonSpinner,
     IonList,
+    IonModal,
+    ReceiptComponent,
   ],
 })
 export class FullSaleComponent implements OnInit {
@@ -77,6 +81,10 @@ export class FullSaleComponent implements OnInit {
   productSearchTerm = '';
   showProductResults = false;
   isLoading = false;
+  showReceiptModal = false;
+  lastSaleId: string | null = null;
+  lastCustomerPhone: string | null = null;
+  lastCustomerEmail: string | null = null;
 
   private productsService = inject(ProductsService);
   private customersService = inject(CustomersService);
@@ -225,7 +233,7 @@ export class FullSaleComponent implements OnInit {
         total: ci.product.priceSale * ci.quantity,
       }));
 
-      await this.salesService.createSaleAndUpdateStock({
+      const saleId = await this.salesService.createSaleAndUpdateStock({
         customerId: resolvedCustomerId,
         customerName: resolvedCustomerName,
         items,
@@ -237,6 +245,11 @@ export class FullSaleComponent implements OnInit {
       });
 
       this.showToast('Venta registrada correctamente', 'success');
+
+      this.lastSaleId = saleId;
+      this.lastCustomerPhone = customer?.phone ?? null;
+      this.lastCustomerEmail = customer?.email ?? null;
+      this.showReceiptModal = true;
 
       this.cartItems = [];
       this.saleForm.reset({

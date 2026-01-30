@@ -20,6 +20,7 @@ import {
   IonCardTitle,
   IonCardContent,
   IonSpinner,
+  IonModal,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { cash } from 'ionicons/icons';
@@ -30,6 +31,7 @@ import { Product } from '../../core/interfaces/product.interfaces';
 import { Customer } from '../../core/interfaces/customer.interfaces';
 import { LoadingService } from '../../core/services/loading.service';
 import { ToastController } from '@ionic/angular';
+import { ReceiptComponent } from '../receipt/receipt.component';
 
 @Component({
   selector: 'app-quick-sale',
@@ -57,6 +59,8 @@ import { ToastController } from '@ionic/angular';
     IonCardTitle,
     IonCardContent,
     IonSpinner,
+    IonModal,
+    ReceiptComponent,
   ],
 })
 export class QuickSaleComponent implements OnInit {
@@ -67,6 +71,10 @@ export class QuickSaleComponent implements OnInit {
   filteredProducts: Product[] = [];
   productSearchTerm = '';
   showProductResults = false;
+  showReceiptModal = false;
+  lastSaleId: string | null = null;
+  lastCustomerPhone: string | null = null;
+  lastCustomerEmail: string | null = null;
 
   private productsService = inject(ProductsService);
   private customersService = inject(CustomersService);
@@ -196,7 +204,7 @@ export class QuickSaleComponent implements OnInit {
       const resolvedCustomerId = manualCustomerName ? undefined : customer?.id;
       const resolvedCustomerName = manualCustomerName || customer?.name;
 
-      await this.salesService.createSaleAndUpdateStock({
+      const saleId = await this.salesService.createSaleAndUpdateStock({
         customerId: resolvedCustomerId,
         customerName: resolvedCustomerName,
         items: [
@@ -217,7 +225,11 @@ export class QuickSaleComponent implements OnInit {
 
       this.showToast('Venta registrada correctamente', 'success');
 
-      // resetear formulario (mantener método de pago en último valor)
+      this.lastSaleId = saleId;
+      this.lastCustomerPhone = customer?.phone ?? null;
+      this.lastCustomerEmail = customer?.email ?? null;
+      this.showReceiptModal = true;
+
       this.quickSaleForm.reset({
         productId: '',
         customerId: '',

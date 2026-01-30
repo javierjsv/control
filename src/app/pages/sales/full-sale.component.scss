@@ -1,4 +1,4 @@
-@import './quick-sale.component.scss';
+@use './quick-sale.component.scss' as *;
 
 .cart-card {
   margin-top: 1rem;

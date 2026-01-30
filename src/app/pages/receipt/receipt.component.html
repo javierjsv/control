@@ -1,0 +1,100 @@
+<div class="receipt-page">
+  <ion-header class="no-print">
+    <ion-toolbar>
+      <ion-title>Recibo de venta</ion-title>
+      <ion-buttons slot="end">
+        <ion-button (click)="close()">
+          <ion-icon name="close" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content class="ion-padding receipt-modal-content" [scrollY]="true">
+  <div *ngIf="loading()" class="receipt-loading">
+    <ion-spinner></ion-spinner>
+    <p>Cargando recibo...</p>
+  </div>
+
+  <div *ngIf="error()" class="receipt-error">
+    <p>{{ error() }}</p>
+    <ion-button fill="outline" (click)="close()">Cerrar</ion-button>
+  </div>
+
+  <div *ngIf="!loading() && !error() && sale()" class="receipt-wrap">
+    <div class="receipt" id="receipt-content">
+      <div class="receipt-header">
+        <img [src]="logoPath" alt="Logo" class="receipt-logo" />
+        <h1 class="receipt-business">{{ businessName }}</h1>
+        <p class="receipt-title">RECIBO DE VENTA</p>
+      </div>
+
+      <div class="receipt-meta">
+        <p><strong>Nº</strong> #{{ (saleId || '') | slice:0:8 }}</p>
+        <p><strong>Fecha</strong> {{ formatDate(sale()!.createdAt) }}</p>
+        <p><strong>Cliente</strong> {{ sale()!.customerName || 'No especificado' }}</p>
+      </div>
+
+      <table class="receipt-table">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th class="qty">Cant.</th>
+            <th class="num">Unit.</th>
+            <th class="num">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of sale()!.items">
+            <td>{{ item.productName }}</td>
+            <td class="qty">{{ item.quantity }}</td>
+            <td class="num">{{ formatCurrency(item.priceUnit) }}</td>
+            <td class="num">{{ formatCurrency(item.total) }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="receipt-totals">
+        <ng-container *ngIf="(sale()!.subtotal ?? 0) !== (sale()!.total ?? 0) && (sale()!.discount ?? 0) > 0">
+          <div class="total-row">
+            <span>Subtotal</span>
+            <span>{{ formatCurrency(sale()!.subtotal) }}</span>
+          </div>
+          <div class="total-row">
+            <span>Descuento</span>
+            <span>-{{ formatCurrency(sale()!.discount ?? 0) }}</span>
+          </div>
+        </ng-container>
+        <div class="total-row total-final">
+          <span>Total</span>
+          <span>{{ formatCurrency(sale()!.total) }}</span>
+        </div>
+        <div class="total-row">
+          <span>Pago</span>
+          <span>{{ paymentLabel(sale()!.paymentMethod || 'other') }}</span>
+        </div>
+      </div>
+
+      <p class="receipt-footer">Gracias por su compra</p>
+    </div>
+
+    <div class="receipt-actions no-print">
+      <ion-button expand="block" (click)="printReceipt()">
+        <ion-icon name="print" slot="start"></ion-icon>
+        Imprimir
+      </ion-button>
+      <ion-button expand="block" color="success" (click)="shareWhatsApp()">
+        <ion-icon name="logo-whatsapp" slot="start"></ion-icon>
+        WhatsApp
+      </ion-button>
+      <ion-button expand="block" fill="outline" (click)="shareEmail()">
+        <ion-icon name="mail" slot="start"></ion-icon>
+        Email
+      </ion-button>
+      <ion-button expand="block" fill="clear" (click)="close()">
+        Cerrar
+      </ion-button>
+    </div>
+  </div>
+  </ion-content>
+</div>
