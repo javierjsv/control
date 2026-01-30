@@ -23,37 +23,10 @@
           <ion-label>Perfil</ion-label>
         </ion-item>
 
+        <!-- Maestros -->
         <ion-item *ngIf="isAuthenticated" button routerLink="/proveedores" routerDirection="root">
           <ion-icon name="business" slot="start"></ion-icon>
           <ion-label>Proveedores</ion-label>
-        </ion-item>
-        <ion-item *ngIf="isAuthenticated" button routerLink="/ventas-completas" routerDirection="root">
-          <ion-icon name="cash" slot="start"></ion-icon>
-          <ion-label>Venta completa</ion-label>
-        </ion-item>
-        <ion-item *ngIf="isAuthenticated" button routerLink="/ventas" routerDirection="root">
-          <ion-icon name="cash" slot="start"></ion-icon>
-          <ion-label>Ventas</ion-label>
-        </ion-item>
-        <ion-item *ngIf="isAuthenticated" button routerLink="/ventas-rapidas" routerDirection="root">
-          <ion-icon name="cash" slot="start"></ion-icon>
-          <ion-label>Registrar venta rápida.</ion-label>
-        </ion-item>
-        <ion-item *ngIf="isAuthenticated" button routerLink="/returns" routerDirection="root">
-          <ion-icon name="arrow-undo" slot="start"></ion-icon>
-          <ion-label>Devoluciones</ion-label>
-        </ion-item>
-        <ion-item *ngIf="isAuthenticated" button routerLink="/returns-history" routerDirection="root">
-          <ion-icon name="time" slot="start"></ion-icon>
-          <ion-label>Historial de devoluciones</ion-label>
-        </ion-item>
-        <ion-item *ngIf="isAuthenticated" button routerLink="/cash-closure" routerDirection="root">
-          <ion-icon name="wallet" slot="start"></ion-icon>
-          <ion-label>Corte de caja</ion-label>
-        </ion-item>
-        <ion-item *ngIf="isAuthenticated" button routerLink="/cash-closure-history" routerDirection="root">
-          <ion-icon name="list" slot="start"></ion-icon>
-          <ion-label>Historial de cortes</ion-label>
         </ion-item>
         <ion-item *ngIf="isAuthenticated" button routerLink="/customers" routerDirection="root">
           <ion-icon name="person" slot="start"></ion-icon>
@@ -63,16 +36,50 @@
           <ion-icon name="pricetags" slot="start"></ion-icon>
           <ion-label>Categorías</ion-label>
         </ion-item>
-
         <ion-item *ngIf="isAuthenticated" button routerLink="/productos" routerDirection="root">
           <ion-icon name="cube" slot="start"></ion-icon>
           <ion-label>Productos</ion-label>
         </ion-item>
-
         <ion-item *ngIf="isAuthenticated" button routerLink="/stock-alerts" routerDirection="root">
           <ion-icon name="alert-circle" slot="start"></ion-icon>
           <ion-label>Alertas de Stock</ion-label>
         </ion-item>
+
+        <!-- Ventas -->
+        <ion-item *ngIf="isAuthenticated" button routerLink="/ventas-rapidas" routerDirection="root">
+          <ion-icon name="cash" slot="start"></ion-icon>
+          <ion-label>Registrar venta rápida</ion-label>
+        </ion-item>
+        <ion-item *ngIf="isAuthenticated" button routerLink="/ventas-completas" routerDirection="root">
+          <ion-icon name="cash" slot="start"></ion-icon>
+          <ion-label>Venta completa</ion-label>
+        </ion-item>
+        <ion-item *ngIf="isAuthenticated" button routerLink="/ventas" routerDirection="root">
+          <ion-icon name="cash" slot="start"></ion-icon>
+          <ion-label>Ventas</ion-label>
+        </ion-item>
+
+        <!-- Devoluciones -->
+        <ion-item *ngIf="isAuthenticated" button routerLink="/returns" routerDirection="root">
+          <ion-icon name="arrow-undo" slot="start"></ion-icon>
+          <ion-label>Devoluciones</ion-label>
+        </ion-item>
+        <ion-item *ngIf="isAuthenticated" button routerLink="/returns-history" routerDirection="root">
+          <ion-icon name="time" slot="start"></ion-icon>
+          <ion-label>Historial de devoluciones</ion-label>
+        </ion-item>
+
+        <!-- Cortes de caja -->
+        <ion-item *ngIf="isAuthenticated" button routerLink="/cash-closure" routerDirection="root">
+          <ion-icon name="wallet" slot="start"></ion-icon>
+          <ion-label>Corte de caja</ion-label>
+        </ion-item>
+        <ion-item *ngIf="isAuthenticated" button routerLink="/cash-closure-history" routerDirection="root">
+          <ion-icon name="list" slot="start"></ion-icon>
+          <ion-label>Historial de cortes</ion-label>
+        </ion-item>
+
+        <!-- Reportes -->
         <ion-item *ngIf="isAuthenticated" button routerLink="/reports" routerDirection="root">
           <ion-icon name="document-text" slot="start"></ion-icon>
           <ion-label>Reportes y análisis</ion-label>
