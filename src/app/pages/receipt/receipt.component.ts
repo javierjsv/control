@@ -18,10 +18,13 @@ import {
   IonIcon,
   IonSpinner,
   IonButtons,
+  ToastController,
+  AlertController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { print, logoWhatsapp, mail, close } from 'ionicons/icons';
+import { print, logoWhatsapp, mail, close, download } from 'ionicons/icons';
 import { take } from 'rxjs';
+import html2canvas from 'html2canvas';
 import { SalesService } from '../../services/sales.service';
 import { Sale } from '../../core/interfaces/sale.interfaces';
 
@@ -63,9 +66,11 @@ export class ReceiptComponent implements OnChanges {
   businessName = 'Mi Negocio';
 
   private salesService = inject(SalesService);
+  private toastController = inject(ToastController);
+  private alertController = inject(AlertController);
 
   constructor() {
-    addIcons({ print, logoWhatsapp, mail, close });
+    addIcons({ print, logoWhatsapp, mail, close, download });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -127,28 +132,143 @@ export class ReceiptComponent implements OnChanges {
     }, 100);
   }
 
-  shareWhatsApp(): void {
+  /** Captura el recibo como imagen usando html2canvas */
+  private async captureReceiptAsImage(): Promise<Blob | null> {
+    const el = document.getElementById('receipt-content');
+    if (!el) return null;
+    try {
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+      return new Promise<Blob | null>((resolve) => {
+        canvas.toBlob(
+          (blob) => resolve(blob),
+          'image/png',
+          1
+        );
+      });
+    } catch (e) {
+      console.error('Error al capturar recibo:', e);
+      return null;
+    }
+  }
+
+  async shareWhatsApp(): Promise<void> {
     const s = this.sale();
     if (!s) return;
-    const text = this.buildReceiptText(s);
-    let phone = (this.customerPhone || '').replace(/\D/g, '');
-    if (phone.length === 10 && !phone.startsWith('57')) {
-      phone = '57' + phone;
+    let phone = this.normalizePhone(this.customerPhone || '');
+    if (phone) {
+      this.openWhatsApp(phone, s);
+    } else {
+      const entered = await this.promptPhoneForWhatsApp();
+      if (entered) {
+        this.openWhatsApp(entered, s);
+      } else {
+        await this.showToast('Número de WhatsApp requerido', 'warning');
+      }
     }
+  }
+
+  private normalizePhone(raw: string): string {
+    let digits = raw.replace(/\D/g, '');
+    if (digits.length === 10 && !digits.startsWith('57')) {
+      digits = '57' + digits;
+    }
+    return digits;
+  }
+
+  private async promptPhoneForWhatsApp(): Promise<string | null> {
+    return new Promise((resolve) => {
+      this.alertController.create({
+        header: 'Número de WhatsApp',
+        message: 'Ingrese el número al que desea enviar el recibo (10 dígitos o con indicativo 57).',
+        inputs: [
+          {
+            name: 'phone',
+            type: 'tel',
+            placeholder: '3001234567',
+          },
+        ],
+        buttons: [
+          { text: 'Cancelar', role: 'cancel', handler: () => resolve(null) },
+          {
+            text: 'Abrir WhatsApp',
+            handler: (data) => {
+              const p = this.normalizePhone(data?.phone || '');
+              if (p && p.length >= 10) {
+                resolve(p);
+                return true;
+              } else {
+                this.showToast('Ingrese un número válido', 'warning');
+                return false;
+              }
+            },
+          },
+        ],
+      }).then((alert) => alert.present());
+    });
+  }
+
+  private openWhatsApp(phone: string, s: Sale): void {
+    const text = this.buildReceiptText(s);
     const url = phone
       ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}`
       : `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   }
 
-  shareEmail(): void {
+  async shareEmail(): Promise<void> {
     const s = this.sale();
     if (!s) return;
+    const blob = await this.captureReceiptAsImage();
+    if (blob && navigator.share) {
+      try {
+        const file = new File([blob], `recibo_${(this.saleId || '').slice(0, 8)}.png`, { type: 'image/png' });
+        await navigator.share({
+          files: [file],
+          title: `Recibo de venta #${(this.saleId || '').slice(0, 8)}`,
+          text: `${this.businessName} - Recibo de venta #${(this.saleId || '').slice(0, 8)}\nCliente: ${s.customerName || 'No especificado'}\nTotal: ${this.formatCurrency(s.total)}`,
+        });
+        await this.showToast('Recibo compartido', 'success');
+      } catch (err: any) {
+        if (err?.name !== 'AbortError') {
+          this.shareEmailFallback(s);
+        }
+      }
+    } else {
+      this.shareEmailFallback(s);
+    }
+  }
+
+  private shareEmailFallback(s: Sale): void {
     const subj = `Recibo de venta #${(this.saleId || '').slice(0, 8)}`;
     const body = this.buildReceiptText(s);
     const to = this.customerEmail ? `mailto:${this.customerEmail}?` : 'mailto:?';
     const url = `${to}subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
     window.location.href = url;
+  }
+
+  async downloadReceiptImage(): Promise<void> {
+    const blob = await this.captureReceiptAsImage();
+    if (!blob) {
+      await this.showToast('No se pudo generar la imagen', 'danger');
+      return;
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `recibo_${(this.saleId || '').slice(0, 8)}.png`;
+    a.click();
+    URL.revokeObjectURL(url);
+    await this.showToast('Imagen descargada', 'success');
+  }
+
+  private async showToast(message: string, color: 'success' | 'danger' | 'warning' = 'success'): Promise<void> {
+    const t = await this.toastController.create({ message, duration: 2500, color, position: 'bottom' });
+    await t.present();
   }
 
   private buildReceiptText(s: Sale): string {

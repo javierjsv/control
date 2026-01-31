@@ -36,6 +36,7 @@
     "apexcharts": "^5.3.6",
     "cordova-plugin-inappbrowser": "^6.0.0",
     "firebase": "^11.10.0",
+    "html2canvas": "^1.4.1",
     "ionicons": "^7.0.0",
     "ng-apexcharts": "^2.0.4",
     "rxjs": "~7.8.0",
