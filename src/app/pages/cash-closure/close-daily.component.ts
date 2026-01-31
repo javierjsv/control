@@ -86,7 +86,10 @@ export class CloseDailyComponent implements OnInit {
 
   setDefaultDate() {
     const t = new Date();
-    this.selectedDate = t.toISOString().slice(0, 10);
+    const y = t.getFullYear();
+    const m = String(t.getMonth() + 1).padStart(2, '0');
+    const d = String(t.getDate()).padStart(2, '0');
+    this.selectedDate = `${y}-${m}-${d}`;
   }
 
   async onDateInput(e: CustomEvent) {
