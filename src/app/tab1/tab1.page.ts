@@ -25,7 +25,7 @@ import {
   ToastController 
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { close, search } from 'ionicons/icons';
+import { close, search, shareSocialOutline, star, starOutline } from 'ionicons/icons';
 import { Product } from '../core/interfaces/product.interfaces';
 import { Category } from '../core/interfaces/category.interfaces';
 import { ProductsService } from '../services/products.service';
@@ -72,7 +72,7 @@ export class Tab1Page implements OnInit {
   private categoriesService = inject(CategoriesService);
 
   constructor() {
-    addIcons({ close, search });
+    addIcons({ close, search, shareSocialOutline, star, starOutline });
   }
 
 

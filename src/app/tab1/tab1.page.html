@@ -124,7 +124,7 @@
             class="share-btn" 
             (click)="shareProduct(product); $event.stopPropagation()"
             type="button">
-            <i class="fas fa-share-alt"></i>
+            <ion-icon name="share-social-outline"></ion-icon>
           </button>
         </div>
         
@@ -132,13 +132,14 @@
         <div class="product-rating-row">
           <div class="rating-section">
             <div class="stars">
-              <i 
+              <ion-icon 
                 *ngFor="let star of getStars(product.rating); let i = index" 
-                [class.fas]="star === 'full'"
-                [class.far]="star === 'empty'"
-                class="fa-star star-icon"
+                [name]="star === 'full' ? 'star' : 'star-outline'"
+                [class.star-full]="star === 'full'"
+                [class.star-empty]="star === 'empty'"
+                class="star-icon"
                 [attr.aria-label]="'Star ' + (i + 1)">
-              </i>
+              </ion-icon>
             </div>
             <span class="reviews-count">{{ product.reviews }} Reviews</span>
           </div>

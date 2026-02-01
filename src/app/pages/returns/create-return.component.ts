@@ -393,6 +393,16 @@ export class CreateReturnComponent implements OnInit {
     });
   }
 
+  paymentLabel(method: string): string {
+    const labels: Record<string, string> = {
+      cash: 'Efectivo',
+      card: 'Tarjeta',
+      transfer: 'Transferencia',
+      other: 'Otro',
+    };
+    return labels[method] ?? method;
+  }
+
   async showToast(message: string, color: 'success' | 'danger' | 'warning' = 'success') {
     const toast = await this.toastController.create({
       message,

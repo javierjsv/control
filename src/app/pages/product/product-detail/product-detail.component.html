@@ -50,13 +50,14 @@
       <!-- Rating y Reviews -->
       <div class="product-rating-section">
         <div class="stars">
-          <i 
+          <ion-icon 
             *ngFor="let star of getStars(product.rating); let i = index" 
-            [class.fas]="star === 'full'"
-            [class.far]="star === 'empty'"
-            class="fa-star star-icon"
+            [name]="star === 'full' ? 'star' : 'star-outline'"
+            [class.star-full]="star === 'full'"
+            [class.star-empty]="star === 'empty'"
+            class="star-icon"
             [attr.aria-label]="'Star ' + (i + 1)">
-          </i>
+          </ion-icon>
         </div>
         <span class="reviews-count">{{ product.reviews }} Reviews</span>
         <span class="stock-status" [class.in-stock]="product.inStock">

@@ -15,7 +15,7 @@ import {
 } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { alertCircle } from 'ionicons/icons';
+import { alertCircle, star, starOutline } from 'ionicons/icons';
 import { Product } from '../../../core/interfaces/product.interfaces';
 import { ProductsService } from '../../../services/products.service';
 import { LoadingService } from '../../../core/services/loading.service';
@@ -54,7 +54,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   private productSubscription?: Subscription;
 
   constructor() {
-    addIcons({ alertCircle });
+    addIcons({ alertCircle, star, starOutline });
   }
 
   ngOnInit() {

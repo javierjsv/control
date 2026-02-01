@@ -56,7 +56,8 @@
             <tr>
               <th>N°</th>
               <th>ID Devolución</th>
-              <th>Tipo</th>
+              <th>Tipo de devolución</th>
+              <th>Razón</th>
               <th>ID Venta</th>
               <th>Cliente</th>
               <th>Productos</th>
@@ -79,6 +80,7 @@
                   {{ returnItem.returnType === 'full' ? 'Completa' : 'Parcial' }}
                 </ion-chip>
               </td>
+              <td>{{ getReturnReasonLabel(returnItem.reason) }}</td>
               <td>{{ returnItem.saleId.substring(0, 8) }}</td>
               <td>
                 <span *ngIf="returnItem.customerName">{{ returnItem.customerName }}</span>
@@ -121,6 +123,14 @@
             <ion-icon name="documentText"></ion-icon>
             Venta relacionada
           </h3>
+          <p><strong>Tipo de devolución:</strong>
+            <ion-chip
+              [color]="returnItem.returnType === 'full' ? 'danger' : 'warning'"
+              size="small">
+              {{ returnItem.returnType === 'full' ? 'Completa' : 'Parcial' }}
+            </ion-chip>
+          </p>
+          <p><strong>Razón:</strong> {{ getReturnReasonLabel(returnItem.reason) }}</p>
           <p><strong>ID:</strong> {{ returnItem.saleId }}</p>
           <p *ngIf="getSale(returnItem.saleId)">
             <strong>Fecha de venta:</strong>
@@ -156,10 +166,6 @@
           <div class="summary-row">
             <span class="summary-label">Total reembolsado:</span>
             <span class="summary-value">{{ formatCurrency(returnItem.totalRefund) }}</span>
-          </div>
-          <div class="summary-row" *ngIf="returnItem.reason">
-            <span class="summary-label">Razón:</span>
-            <span class="summary-value">{{ getReturnReasonLabel(returnItem.reason) }}</span>
           </div>
           <div class="summary-row" *ngIf="returnItem.notes">
             <span class="summary-label">Notas:</span>

@@ -154,6 +154,7 @@
           <p><strong>ID:</strong> {{ selectedSale.id }}</p>
           <p><strong>Fecha:</strong> {{ formatDate(selectedSale.createdAt) }}</p>
           <p><strong>Cliente:</strong> {{ selectedSale.customerName || 'No especificado' }}</p>
+          <p><strong>Método de pago:</strong> {{ paymentLabel(selectedSale.paymentMethod || 'other') }}</p>
           <p><strong>Total:</strong> {{ formatCurrency(selectedSale.total) }}</p>
           <p><strong>Productos:</strong> {{ selectedSale.items.length }}</p>
         </div>
